@@ -1,0 +1,131 @@
+
+
+<style>
+.three-buttons-row {
+  display: flex;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 20px; /* Расстояние между контейнерами */
+}
+
+/* Контейнеры заполняют всю ширину равномерно */
+.three-buttons-row .button-container {
+  flex: 1; /* Равномерное распределение ширины */
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  min-width: 0; /* Важно для корректного сжатия */
+}
+
+/* Изображение занимает всю ширину контейнера */
+.three-buttons-row .button-image {
+  width: 100%;
+  margin-bottom: 15px;
+  flex-shrink: 0; /* Не сжимается */
+}
+
+.three-buttons-row .button-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  max-height: 200px; /* Ограничение высоты изображения */
+}
+
+/* Кнопка занимает оставшееся пространство */
+.three-buttons-row .button {
+  flex: 1; /* Занимает всю доступную высоту */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0; /* Разрешаем сжатие */
+}
+
+.three-buttons-row .button a {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-color: var(--lightBKG);
+  text-decoration: none;
+  font-weight: 300;
+  font-family: var(--font-heading);
+  font-size: 40px;
+  color: var(--dark-color);
+  border-radius: 0;
+  transition: background-color 0.2s;
+  padding: 10px;
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.three-buttons-row .button a:hover {
+  background-color: var(--brightBKG);
+}
+
+/* Убираем отступы для адаптивности */
+@media (max-width: 1024px) {
+  .three-buttons-row .button a {
+    font-size: 32px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .three-buttons-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .three-buttons-row .button-container {
+    width: 100%;
+  }
+  
+  .three-buttons-row .button a {
+    font-size: 28px;
+    min-height: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .three-buttons-row .button a {
+    font-size: 24px;
+    padding: 6px;
+  }
+}
+</style>
+
+<div class="three-buttons-row">
+    <div class="button-container">
+        <div class="button-image">
+    	    <img src="https://spbarchives.ru/documents/10157/12636626/site%D0%A0%D0%B5%D1%81%D1%83%D1%80%D1%81+2+%E2%80%94+%D0%BA%D0%BE%D0%BF%D0%B8%D1%8F.png/66922551-45f2-4d9a-d1d4-1921ebbb373b?version=1.0&t=1765370286730&imagePreview=1">
+    	</div>
+        <div class="button peterhof">
+            <a href="https://spbarchives.ru/2447">Петергоф</a>
+        </div>
+    </div>
+  
+    <div class="button-container">
+        <div class="button-image">
+    	    <img src="https://spbarchives.ru/documents/10157/12636626/site%D0%A0%D0%B5%D1%81%D1%83%D1%80%D1%81+3+%E2%80%94+%D0%BA%D0%BE%D0%BF%D0%B8%D1%8F.png/a675025e-b8c2-28e4-ace5-e147524aab23?version=1.1&t=1765389378679&imagePreview=1">
+    	</div>
+        <div class="button pushkin">
+            <a href="">Пушкин</a>
+        </div>
+    </div>
+
+  
+
+    <div class="button-container">
+        <div class="button-image">
+    	    <img src="https://spbarchives.ru/documents/10157/12636626/site%D0%A0%D0%B5%D1%81%D1%83%D1%80%D1%81+4+%E2%80%94+%D0%BA%D0%BE%D0%BF%D0%B8%D1%8F.png/bd8c2b5a-9896-d0f6-7366-fe60143e084c?version=1.0&t=1765370286875&imagePreview=1" >
+    	</div>
+        <div class="button pavlovsk">
+            <a href="">Павловск</a>
+        </div>
+    </div>
+</div>

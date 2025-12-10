@@ -1,0 +1,438 @@
+<!-- Подключаем Fancybox из CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css" />
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
+
+<style>
+    /* Стили остаются без изменений */
+    .root-folder-header {
+      background-color: var(--lightBKG);
+      padding: 15px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+
+    .root-folder-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    .media-gallery-captions {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    
+    .media-title * {
+        text-decoration: none;
+    }
+
+    .media-item {
+      border-radius: 0px;
+      overflow: hidden;
+      background-color: var(--lightBKG);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    .media-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+
+    .media-image-container {
+      height: 180px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .media-image {
+      width: 100%;
+      height: 100%;
+      padding: 10px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .media-item:hover .media-image {
+      transform: scale(1.03);
+    }
+
+    .media-caption {
+      padding: 15px;
+      background-color: var(--lightBKG);
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .media-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--dark-color);
+      margin-bottom: 5px;
+      word-break: break-word;
+      text-decoration: none;
+    }
+
+    .media-description {
+      font-size: 12px;
+      color: var(--dark-color);
+      line-height: 1.4;
+      margin-bottom: 8px;
+      text-decoration: none;
+    }
+
+    .media-meta {
+      font-size: 11px;
+      color: #888;
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px dashed #eee;
+      padding-top: 8px;
+      margin-top: 8px;
+      text-decoration: none;
+    }
+
+    /* Кастомные стили для Fancybox */
+    .fancybox__container {
+      --fancybox-bg: rgba(0, 0, 0, 0.9);
+      --fancybox-thumbs-width: 80px;
+      --fancybox-thumbs-ratio: 1;
+    }
+
+    .fancybox__toolbar {
+      padding: 10px;
+    }
+
+    .fancybox__nav {
+      --f-button-width: 50px;
+      --f-button-height: 50px;
+      --f-button-border-radius: 50%;
+      --f-button-color: rgba(255, 255, 255, 0.9);
+      --f-button-hover-color: white;
+      --f-button-bg: rgba(30, 30, 30, 0.6);
+      --f-button-hover-bg: rgba(0, 0, 0, 0.8);
+      --f-button-active-bg: rgba(0, 0, 0, 0.9);
+    }
+
+    .fancybox__slide {
+      padding: 20px;
+    }
+
+    .fancybox__caption {
+      text-align: center;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 8px;
+      max-width: 80%;
+      margin: 0 auto 20px;
+      text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+      .root-folder-header {
+        padding: 12px 15px;
+        margin-bottom: 15px;
+      }
+      
+      .root-folder-title {
+        font-size: 16px;
+      }
+      
+      .media-gallery-captions {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        padding: 15px;
+      }
+      
+      .media-image-container {
+        height: 150px;
+      }
+    }
+
+    .fancybox__infobar {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.9);
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 20px;
+    }
+
+    .fancybox__infobar__count {
+        font-weight: 500;
+    }
+
+    .media-item {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        
+    }
+
+    @media (max-width: 768px) {
+        .fancybox__container {
+            --fancybox-thumbs-width: 60px;
+        }
+    }
+
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+        font-size: 16px;
+    }
+
+    .no-media {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+    }
+</style>
+
+<!-- НОВАЯ ПАНЕЛЬ С НАЗВАНИЕМ ROOT ФОЛДЕРА -->
+<div class="root-folder-header">
+  <h1 class="root-folder-title">---</h1>
+</div>
+
+<!-- Контейнер для галереи -->
+<div id="gallery-container">
+    <div class="loading">Loading gallery...</div>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+        
+        // КОНФИГУРАЦИЯ ГИТХАБ
+        const GITHUB_REPO = 'LordOfTheDepth/Peterhoff'; // Владелец и название репозитория
+        const GITHUB_BRANCH = '6ecbc6a4ca5f904661d074f540adb15591422ef5'; // Хэш коммита (ветка)
+        const GITHUB_FOLDER = '%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B'; // Папка "до войны" (URL-encoded)
+        
+        // Конфигурация галереи
+        const HEADER_NAME = "Петергоф до войны";
+        const GALLERY_ID = "gallery-" + new Date().getTime();
+        
+        // Основная и единственная функция загрузки данных с GitHub
+        async function loadFromGitHub() {
+            try {
+                console.log('🔄 Загрузка списка файлов с GitHub...');
+                
+                // Формируем URL для запроса к GitHub API
+                // Docs: https://docs.github.com/en/rest/repos/contents#get-repository-content
+                const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FOLDER}?ref=${GITHUB_BRANCH}`;
+                
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`GitHub API ответил с кодом: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log(`✅ Получено ${data.length} элементов из папки.`);
+                
+                // Фильтруем только файлы-изображения и преобразуем в нужный формат
+                const imageFiles = data.filter(item => {
+                    // Проверяем, что это файл, а не папка
+                    if (item.type !== 'file') return false;
+                    
+                    // Проверяем расширение файла (только изображения)
+                    const fileName = item.name.toLowerCase();
+                    return fileName.endsWith('.jpg') || 
+                           fileName.endsWith('.jpeg') || 
+                           fileName.endsWith('.png') || 
+                           fileName.endsWith('.gif');
+                });
+                
+                console.log(`🖼️ Найдено ${imageFiles.length} изображений.`);
+                
+                // Преобразуем данные GitHub в формат, понятный нашей галерее
+                return imageFiles.map(item => {
+                    // Убираем расширение файла для отображения названия
+                    const displayTitle = item.name.replace(/\.[^.]+$/, "");
+                    
+                    return {
+                        title: item.name,
+                        displayTitle: displayTitle,
+                        // Используем direct_url для скачивания (raw-контент GitHub)
+                        directUrl: item.download_url,
+                        // Для превью используем тот же URL (можно добавить параметры позже)
+                        thumbnailUrl: item.download_url,
+                        description: "", // Пока оставляем пустым, как вы просили
+                        size: item.size,
+                        // GitHub API не возвращает UUID, используем sha как уникальный идентификатор
+                        uuid: item.sha
+                    };
+                });
+                
+            } catch (error) {
+                console.error('❌ Ошибка при загрузке данных с GitHub:', error);
+                // Возвращаем пустой массив в случае ошибки
+                return [];
+            }
+        }
+        
+        // Функция для создания URL превью (оставлена для совместимости со стилями)
+        function getThumbnailURL(fileEntry) {
+            return fileEntry.thumbnailUrl;
+        }
+        
+        // Функция для создания HTML галереи (БЕЗ ИЗМЕНЕНИЙ)
+        function createGallery(entries) {
+            const container = document.getElementById('gallery-container');
+            
+            if (!entries || entries.length === 0) {
+                container.innerHTML = `
+                    <div class="no-media">
+                      <p>В указанной папке на GitHub не найдено файлов-изображений.</p>
+                      <p>Убедитесь, что в папке есть файлы с расширениями: .jpg, .jpeg, .png, .gif</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Обновляем заголовок
+            const folderTitle = document.querySelector('.root-folder-title');
+            if (folderTitle && folderTitle.textContent === '---') {
+                folderTitle.textContent = HEADER_NAME;
+            }
+            
+            // Создаем галерею
+            const galleryHtml = `
+                <div class="media-gallery-captions" id="${GALLERY_ID}">
+                    ${entries.map((entry, index) => {
+                        const imageURL = entry.directUrl;
+                        const thumbURL = getThumbnailURL(entry);
+                        const displayTitle = entry.displayTitle;
+                        const description = entry.description || '';
+                        const isImage = true; // Все файлы уже отфильтрованы как изображения
+                        
+                        return `
+                            <a href="${imageURL}" 
+                               class="media-item"
+                               data-fancybox="${GALLERY_ID}"
+                               data-caption="<div style='text-align:center;'>
+                                               <h4 style='margin:0 0 8px 0; color:white;'>${escapeHtml(displayTitle)}</h4>
+                                               ${description ? `<p style='margin:0; color:#ccc; font-size:14px;'>${escapeHtml(description)}</p>` : ''}
+                                             </div>"
+                               data-thumb="${thumbURL}">
+                              
+                              <div class="media-image-container">
+                                <img src="${thumbURL}" 
+                                     alt="${escapeHtml(displayTitle)}" 
+                                     class="media-image"
+                                     loading="lazy"
+                                     onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"150\" viewBox=\"0 0 200 150\"><rect width=\"200\" height=\"150\" fill=\"%23f0f0f0\"/><text x=\"100\" y=\"75\" text-anchor=\"middle\" dy=\".3em\" font-family=\"Arial\" font-size=\"14\" fill=\"%23999\">Изображение</text></svg>'">
+                              </div>
+                              
+                              <div class="media-caption">
+                                <div class="media-title">${escapeHtml(displayTitle)}</div>
+                                ${description ? `<div class="media-description">${escapeHtml(description)}</div>` : ''}
+                              </div>
+                            </a>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = galleryHtml;
+            initFancyboxGallery();
+        }
+        
+        // Экранирование HTML (без изменений)
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Инициализация Fancybox (без изменений)
+        function initFancyboxGallery() {
+    if (typeof Fancybox === 'undefined') {
+        console.warn('Fancybox не загружен, повторная попытка...');
+        setTimeout(initFancyboxGallery, 100);
+        return;
+    }
+    
+    // Ищем ВСЕ элементы с атрибутом data-fancybox
+    // Не фильтруем по конкретному GALLERY_ID, а используем общий селектор
+    const galleryItems = document.querySelectorAll('[data-fancybox]');
+    
+    if (galleryItems.length > 0) {
+        console.log(`✅ Найдено ${galleryItems.length} элементов для Fancybox`);
+        
+        // Вариант 1: Используем общую галерею для всех элементов
+        Fancybox.bind(galleryItems, {
+            Thumbs: { 
+                autoStart: false,
+                type: 'classic'
+            },
+            Toolbar: {
+                display: {
+                    left: ['infobar'],
+                    middle: [],
+                    right: ['iterateZoom', 'download', 'thumbs', 'close'],
+                },
+            },
+            Images: {
+                zoom: true,
+                wheel: 'slide'
+            },
+            Carousel: {
+                infinite: true,
+                Navigation: false
+            },
+            on: {
+                init: (fancybox) => {
+                    console.log('🎯 Fancybox успешно инициализирован');
+                }
+            }
+        });
+        
+    } else {
+        console.warn('⚠️ Не найдено элементов для Fancybox');
+    }
+}
+        
+        // Основная функция инициализации
+        async function initGallery() {
+            console.log('🚀 Инициализация галереи с GitHub...');
+            
+            try {
+                // Загружаем данные ТОЛЬКО через GitHub
+                const entries = await loadFromGitHub();
+                
+                console.log(`✅ Загружено ${entries.length} изображений для галереи.`);
+                
+                // Создаем галерею
+                createGallery(entries);
+                
+            } catch (error) {
+                console.error('❌ Не удалось инициализировать галерею:', error);
+                
+                // Показать информацию об ошибке
+                document.getElementById('gallery-container').innerHTML = `
+                    <div class="no-media">
+                      <p>Ошибка загрузки галереи.</p>
+                      <p>Проверьте конфигурацию GitHub в коде скрипта.</p>
+                      <p>Ошибка: ${error.message}</p>
+                      <p style="margin-top: 20px;">
+                        <button onclick="location.reload()">Обновить страницу</button>
+                      </p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Запуск при загрузке страницы
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initGallery);
+        } else {
+            initGallery();
+        }
+        
+    })();
+</script>

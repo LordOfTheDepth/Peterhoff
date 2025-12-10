@@ -1,0 +1,427 @@
+<#assign entries = entries />
+
+<!-- Подключаем Fancybox из CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css" />
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
+
+<style>
+/* НОВАЯ ПАНЕЛЬ С НАЗВАНИЕМ ROOT ФОЛДЕРА */
+.root-folder-header {
+  background-color: var(--lightBKG);
+  padding: 15px 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+.root-folder-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--dark-color);
+  margin: 0;
+}
+
+/* Остальные существующие стили остаются без изменений */
+.media-gallery-captions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+.media-title *
+{
+    text-decoration: none;
+}
+
+.media-item {
+  border-radius: 0px;
+  overflow: hidden;
+  background: var(--brightBKG);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.media-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.media-image-container {
+  height: 180px;
+  overflow: hidden;
+  position: relative;
+}
+
+.media-image {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.media-item:hover .media-image {
+  transform: scale(1.03);
+}
+
+.media-caption {
+  padding: 15px;
+  background: var(--brightBKG);
+  text-align: center; /* Подписи по центру карточки */
+  text-decoration: none;
+}
+
+.media-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--dark-color);
+  margin-bottom: 5px;
+  word-break: break-word;
+  text-decoration: none;
+}
+
+.media-description {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  text-decoration: none;
+}
+
+.media-meta {
+  font-size: 11px;
+  color: #888;
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px dashed #eee;
+  padding-top: 8px;
+  margin-top: 8px;
+  text-decoration: none;
+}
+
+/* Кастомные стили для Fancybox */
+.fancybox__container {
+  --fancybox-bg: rgba(0, 0, 0, 0.9);
+  --fancybox-thumbs-width: 80px;
+  --fancybox-thumbs-ratio: 1;
+}
+
+.fancybox__toolbar {
+  padding: 10px;
+}
+
+.fancybox__nav {
+  --f-button-width: 50px;
+  --f-button-height: 50px;
+  --f-button-border-radius: 50%;
+  --f-button-color: rgba(255, 255, 255, 0.9);
+  --f-button-hover-color: white;
+  --f-button-bg: rgba(30, 30, 30, 0.6);
+  --f-button-hover-bg: rgba(0, 0, 0, 0.8);
+  --f-button-active-bg: rgba(0, 0, 0, 0.9);
+}
+
+.fancybox__slide {
+  padding: 20px;
+}
+
+.fancybox__caption {
+  text-align: center;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  max-width: 80%;
+  margin: 0 auto 20px;
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .root-folder-header {
+    padding: 12px 15px;
+    margin-bottom: 15px;
+  }
+  
+  .root-folder-title {
+    font-size: 16px;
+  }
+  
+  .media-gallery-captions {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 15px;
+  }
+  
+  .media-image-container {
+    height: 150px;
+  }
+}
+</style>
+<#if entries?has_content>
+
+
+<!-- НОВАЯ ПАНЕЛЬ С НАЗВАНИЕМ ROOT ФОЛДЕРА -->
+<div class="root-folder-header">
+  <h1 class="root-folder-title">---</h1>
+</div>
+
+<#assign galleryId = "gallery-" + .now?string["HHmmssSSS"]>
+<div class="media-gallery-captions" id="${galleryId}">
+  <#list entries as entry>
+    <#assign fileEntry = entry />
+    <#assign title = fileEntry.getTitle() />
+    <#assign description = fileEntry.getDescription()!"" />
+    <#assign mimeType = fileEntry.getMimeType() />
+    <#assign size = fileEntry.getSize() />
+    <#assign createDate = fileEntry.getCreateDate() />
+    
+    <#-- Получаем URL изображения -->
+    <#assign imageURL = "/documents/" + fileEntry.getRepositoryId() + "/" + 
+                        fileEntry.getFolderId() + "/" + fileEntry.getTitle() + "/" + 
+                        fileEntry.getUuid() />
+    <#assign thumbURL = imageURL + "?imageThumbnail=1" />
+    
+    <#-- Убираем расширение из названия файла -->
+    <#assign displayTitle = title?replace("\\.[^.]+$", "", "r")>
+    
+    <a href="${imageURL}" 
+       class="media-item"
+       data-fancybox="${galleryId}"
+       data-caption="<div style='text-align:center;'>
+                       <h4 style='margin:0 0 8px 0; color:white; text-decoration: none;'>${displayTitle?html}</h4>
+                       <#if description?has_content>
+                         <p style='margin:0; color:#ccc; font-size:14px; text-decoration: none;'>${description?html}</p>
+                       </#if>
+                     </div>"
+       data-thumb-src="${thumbURL}">
+      
+      <div class="media-image-container">
+        <img src="${thumbURL}" 
+             alt="${displayTitle}" 
+             class="media-image"
+             loading="lazy">
+      </div>
+      
+      <div class="media-caption">
+        <div class="media-title">${displayTitle}</div>
+        
+        <#if description?has_content>
+          <div class="media-description">${description}</div>
+        </#if>
+      </div>
+    </a>
+  </#list>
+</div>
+
+<#else>
+<div class="no-media" style="text-align:center; padding:40px; color:#666;">
+  <p>No media files found in the gallery.</p>
+</div>
+</#if>
+
+<script>
+(function() {
+    'use strict';
+    
+    // Уникальный ID для галереи
+    const galleryContainer = document.querySelector('.media-gallery-captions');
+    const galleryId = galleryContainer ? galleryContainer.id : 'gallery-' + Date.now();
+    
+    // Инициализация Fancybox после загрузки DOM
+    function initFancyboxGallery() {
+        if (typeof Fancybox === 'undefined') {
+            console.warn('Fancybox not loaded');
+            setTimeout(initFancyboxGallery, 100);
+            return;
+        }
+        
+        const galleryItems = document.querySelectorAll('[data-fancybox="' + galleryId + '"]');
+        
+        if (galleryItems.length > 0) {
+            // Конфигурация Fancybox
+            Fancybox.bind('[data-fancybox="' + galleryId + '"]', {
+                // Основные настройки
+                Thumbs: {
+                    autoStart: true,
+                    hideScrollbar: false,
+                },
+                Toolbar: {
+                    display: {
+                        left: ['infobar'],
+                        middle: [],
+                        right: ['iterateZoom', 'download', 'thumbs', 'close'],
+                    },
+                },
+                Images: {
+                    zoom: true,
+                    wheel: 'slide',
+                },
+                Carousel: {
+                    infinite: true,
+                    transition: 'slide',
+                    friction: 0.3,
+                },
+                // Кастомные настройки
+                on: {
+                    init: function(fancybox) {
+                        console.log('Fancybox initialized for gallery:', galleryId);
+                    },
+                    'Carousel.ready': function(fancybox, carousel) {
+                        updateCounter(fancybox, carousel);
+                    },
+                    'Carousel.change': function(fancybox, carousel, currSlide, prevSlide) {
+                        updateCounter(fancybox, carousel);
+                    },
+                },
+            });
+        }
+    }
+    
+    function updateCounter(fancybox, carousel) {
+        const infobar = fancybox.container.querySelector('.fancybox__infobar');
+        if (infobar && carousel.slides.length > 0) {
+            infobar.innerHTML = '<span class="fancybox__infobar__count">' + 
+                                (carousel.prevPage + 1) + ' / ' + carousel.slides.length + '</span>';
+        }
+    }
+    
+    // Fallback если Fancybox не загрузился
+    function initFallbackLightbox() {
+        const galleryItems = document.querySelectorAll('.media-item');
+        
+        galleryItems.forEach((item, index) => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const src = this.href;
+                const caption = this.dataset.caption || '';
+                
+                // Создаем простой лайтбокс
+                const overlay = document.createElement('div');
+                overlay.className = 'fallback-lightbox';
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.9);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                `;
+                
+                const container = document.createElement('div');
+                container.className = 'lightbox-content';
+                container.style.cssText = `
+                    position: relative;
+                    max-width: 90vw;
+                    max-height: 90vh;
+                    text-align: center;
+                `;
+                
+                const img = document.createElement('img');
+                img.src = src;
+                img.style.cssText = `
+                    max-width: 100%;
+                    max-height: 80vh;
+                    border-radius: 4px;
+                `;
+                
+                const closeBtn = document.createElement('button');
+                closeBtn.innerHTML = '&times;';
+                closeBtn.style.cssText = `
+                    position: absolute;
+                    top: -40px;
+                    right: 0;
+                    background: transparent;
+                    border: none;
+                    color: white;
+                    font-size: 32px;
+                    cursor: pointer;
+                    opacity: 0.7;
+                    transition: opacity 0.2s;
+                `;
+                
+                closeBtn.onclick = function() {
+                    document.body.removeChild(overlay);
+                };
+                
+                if (caption) {
+                    const captionDiv = document.createElement('div');
+                    captionDiv.innerHTML = caption;
+                    captionDiv.style.cssText = `
+                        color: white;
+                        margin-top: 15px;
+                        padding: 10px;
+                        background: rgba(0,0,0,0.5);
+                        border-radius: 4px;
+                    `;
+                    container.appendChild(captionDiv);
+                }
+                
+                container.appendChild(img);
+                container.appendChild(closeBtn);
+                overlay.appendChild(container);
+                
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) {
+                        document.body.removeChild(overlay);
+                    }
+                });
+                
+                document.body.appendChild(overlay);
+            });
+        });
+    }
+    
+    // Запуск инициализации
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initFancyboxGallery();
+            // Fallback через 3 секунды если Fancybox не загрузился
+            setTimeout(function() {
+                if (typeof Fancybox === 'undefined') {
+                    initFallbackLightbox();
+                }
+            }, 3000);
+        });
+    } else {
+        initFancyboxGallery();
+        setTimeout(function() {
+            if (typeof Fancybox === 'undefined') {
+                initFallbackLightbox();
+            }
+        }, 3000);
+    }
+    
+})();
+</script>
+
+<!-- Дополнительные стили -->
+<style>
+.fancybox__infobar {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 20px;
+}
+
+.fancybox__infobar__count {
+    font-weight: 500;
+}
+
+.media-item {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .fancybox__container {
+        --fancybox-thumbs-width: 60px;
+    }
+}
+</style>

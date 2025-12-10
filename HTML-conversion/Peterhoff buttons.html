@@ -1,0 +1,77 @@
+
+<style>
+.three-buttons-row {
+  display: flex;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 20px; 
+}
+
+.three-buttons-row .button-container {
+  flex: 1; /* Равномерное распределение ширины */
+  display: flex;
+  flex-direction: column;
+
+}
+
+.three-buttons-row .button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+.three-buttons-row a {
+  text-align: center;
+  font-weight: 300;
+  font-family: var(--font-heading);
+  font-size: 35px;
+  color: var(--dark-color);
+  text-decoration: none;
+  padding: 10px;
+  
+}
+
+
+
+@media (max-width: 768px) {
+  .three-buttons-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .three-buttons-row a {
+  font-size: 20px;
+  
+    }
+}@media (max-width: 991px) {
+
+  .three-buttons-row a {
+  font-size: 30px;
+  
+    }
+}
+
+
+</style>
+
+<div class="three-buttons-row">
+    <div class="button-container ">
+        <div class="button bright hover-lift">
+           <a href="https://spbarchives.ru/2448">До войны</a>
+        </div>
+    </div>
+  
+    <div class="button-container">
+        <div class="button dull hover-lift">
+           <a href="https://spbarchives.ru/2449">Разрушение</a>
+        </div>
+    </div>
+  
+    <div class="button-container">
+        <div class="button light hover-lift">
+            <a href="https://spbarchives.ru/2450">Восстановление</a>
+        </div>
+    </div>
+</div>
