@@ -142,5 +142,45 @@
 {
   display: none;
 }
+
+.image-overlay-container {
+  position: relative;
+  width: 100%;
+  min-height: 8vw;
+  overflow: hidden;
+}
+
+.image-overlay-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.overlay-text {
+
+  text-transform: uppercase;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  line-height: 1;
+  position: absolute;
+  top: 20%;
+  left: 40%;
+  right: 5%;
+  color: var(--dark-color);
+  font-weight: bold;
+  font-size: 3.5vw;
+  font-family: var(--font-heading);
+  
+}
+.overlay-text2 {
+  background-color: var(--lifgtBKG);
+  color: var(--darkBKG);
+  font-weight: bold;
+  font-size: 2vw;
+  font-family: var(--font-heading);
+}
+
+
 </style>
 

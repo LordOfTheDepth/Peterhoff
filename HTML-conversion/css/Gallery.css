@@ -1,0 +1,189 @@
+   /* Стили остаются без изменений */
+    .gallery-title {
+      background-color: var(--lightBKG);
+      padding: 15px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      margin-top: 20px;
+    }
+
+    .gallery-title * {
+      
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark-color);
+      margin: 0;
+
+    }
+
+    .media-gallery-captions {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    
+    .media-title * {
+        text-decoration: none;
+    }
+
+    .media-item {
+      border-radius: 0px;
+      overflow: hidden;
+      background-color: var(--lightBKG);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    .media-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+
+    .media-image-container {
+      height: 180px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .media-image {
+      width: 100%;
+      height: 100%;
+      padding: 10px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .media-item:hover .media-image {
+      transform: scale(1.03);
+    }
+
+    .media-caption {
+      padding: 15px;
+      background-color: var(--lightBKG);
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .media-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--dark-color);
+      margin-bottom: 5px;
+      word-break: break-word;
+      text-decoration: none;
+    }
+
+    .media-description {
+      font-size: 12px;
+      color: var(--dark-color);
+      line-height: 1.4;
+      margin-bottom: 8px;
+      text-decoration: none;
+    }
+
+    .media-meta {
+      font-size: 11px;
+      color: #888;
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px dashed #eee;
+      padding-top: 8px;
+      margin-top: 8px;
+      text-decoration: none;
+    }
+
+    /* Кастомные стили для Fancybox */
+    .fancybox__container {
+      --fancybox-bg: rgba(0, 0, 0, 0.9);
+      --fancybox-thumbs-width: 80px;
+      --fancybox-thumbs-ratio: 1;
+    }
+
+    .fancybox__toolbar {
+      padding: 10px;
+    }
+
+    .fancybox__nav {
+      --f-button-width: 50px;
+      --f-button-height: 50px;
+      --f-button-border-radius: 50%;
+      --f-button-color: rgba(255, 255, 255, 0.9);
+      --f-button-hover-color: white;
+      --f-button-bg: rgba(30, 30, 30, 0.6);
+      --f-button-hover-bg: rgba(0, 0, 0, 0.8);
+      --f-button-active-bg: rgba(0, 0, 0, 0.9);
+    }
+
+    .fancybox__slide {
+      padding: 20px;
+    }
+
+    .fancybox__caption {
+      text-align: center;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 8px;
+      max-width: 80%;
+      margin: 0 auto 20px;
+      text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+      .root-folder-header {
+        padding: 12px 15px;
+        margin-bottom: 15px;
+      }
+      
+      .root-folder-title {
+        font-size: 16px;
+      }
+      
+      .media-gallery-captions {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        padding: 15px;
+      }
+      
+      .media-image-container {
+        height: 150px;
+      }
+    }
+
+    .fancybox__infobar {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.9);
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 20px;
+    }
+
+    .fancybox__infobar__count {
+        font-weight: 500;
+    }
+
+    .media-item {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        
+    }
+
+    @media (max-width: 768px) {
+        .fancybox__container {
+            --fancybox-thumbs-width: 60px;
+        }
+    }
+
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+        font-size: 16px;
+    }
+
+    .no-media {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+    }

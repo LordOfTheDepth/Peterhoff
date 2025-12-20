@@ -1,0 +1,53 @@
+<link rel="stylesheet" href="css/MainStyle.css">
+
+
+<div class="image-overlay-container">
+  <img src="https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/site%D0%A0%D0%B5%D1%81%D1%83%D1%80%D1%81%201.png?raw=true">
+  <div class="main-header-overlay-text">
+    Послевоенное восстановление
+        <div class="main-header-overlay-text-low">
+            Пригородных дворцово-парковых ансамблей Санкт-Петербурга
+        </div>
+  </div>
+</div>
+<div class="three-buttons-row">
+    <div class="button-container">
+        <div class="button-image">
+    	    <img src="https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/site%D0%A0%D0%B5%D1%81%D1%83%D1%80%D1%81%202.png?raw=true">
+    	</div>
+        <div class="button peterhof">
+            <a href="https://spbarchives.ru/2447">Петергоф</a>
+        </div>
+    </div>
+    <div class="button-container">
+        <div class="button-image">
+    	    <img src="https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/site%D0%A0%D0%B5%D1%81%D1%83%D1%80%D1%81%203.png?raw=true">
+    	</div>
+        <div class="button pushkin">
+            <a href="">Пушкин</a>
+        </div>
+    </div>
+    <div class="button-container">
+        <div class="button-image">
+    	    <img src="https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/site%D0%A0%D0%B5%D1%81%D1%83%D1%80%D1%81%204.png?raw=true" >
+    	</div>
+        <div class="button pavlovsk">
+            <a href="">Павловск</a>
+        </div>
+    </div>
+</div>
+<link rel="import" href="Footer.html">
+
+<div class="site-footer">
+<a href="#top" class="back-to-top hover-lift">↑</a>
+  <div class="footer-content">
+    <div class="footer-logo">
+      <img src="https://spbarchives.ru/image/layout_set_logo?img_id=5944756&t=1762646771410">
+    </div>
+    
+    <div class="footer-caption">
+      <strong>АРХИВЫ САНКТ-ПЕТЕРБУРГА</strong><br>
+      © 2025 · 
+    </div>
+  </div>
+</div>
