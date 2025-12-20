@@ -32,6 +32,7 @@
       background-color: var(--lightBKG);
       transition: transform 0.3s ease;
       cursor: pointer;
+
     }
 
     .media-item:hover {
@@ -42,7 +43,9 @@
     .media-image-container {
       height: 180px;
       overflow: hidden;
-      position: relative;
+      position: relative; 
+      margin-right: 10px;
+      
     }
 
     .media-image {
