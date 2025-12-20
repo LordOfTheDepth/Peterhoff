@@ -7,7 +7,6 @@
             // Извлекаем параметры из URL
             const urlParts = githubFolderUrl.split('/');
             
-            // Проверяем, что это валидный GitHub URL
             if (urlParts[2] !== 'github.com') {
                 throw new Error('Неверный GitHub URL');
             }
@@ -15,7 +14,7 @@
             const GITHUB_REPO = `${urlParts[3]}/${urlParts[4]}`;
             
             // Определяем ветку/коммит
-            let GITHUB_BRANCH = 'main';
+            let GITHUB_BRANCH = 'NewGallery';
             let GITHUB_FOLDER = '';
             
             // Находим индекс "tree" в URL
@@ -33,42 +32,27 @@
             // Декодируем папку из URL-encoded формата
             GITHUB_FOLDER = decodeURIComponent(GITHUB_FOLDER);
             
-            // Функция для извлечения description из метаданных EXIF
-            async function extractImageDescription(imageUrl) {
-                return new Promise((resolve) => {
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
+            // Функция для загрузки JSON файла с описаниями
+            async function loadDescriptionsJSON() {
+                try {
+                    const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
+                    const jsonUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}/descriptions.json?ref=${GITHUB_BRANCH}`;
                     
-                    // Устанавливаем таймаут для предотвращения зависания
-                    const timeout = setTimeout(() => {
-                        resolve('');
-                    }, 5000); // 5 секунд таймаут
+                    const response = await fetch(jsonUrl);
                     
-                    img.onload = function() {
-                        clearTimeout(timeout);
-                        try {
-                            // Пытаемся извлечь EXIF данные если библиотека доступна
-                            if (window.EXIF) {
-                                EXIF.getData(img, function() {
-                                    const description = EXIF.getTag(this, "ImageDescription") || '';
-                                    resolve(description);
-                                });
-                            } else {
-                                resolve('');
-                            }
-                        } catch (error) {
-                            resolve('');
+                    if (response.ok) {
+                        const fileData = await response.json();
+                        if (fileData.content) {
+                            // Декодируем base64 контент
+                            const content = atob(fileData.content.replace(/\n/g, ''));
+                            return JSON.parse(content);
                         }
-                    };
-                    
-                    img.onerror = function() {
-                        clearTimeout(timeout);
-                        resolve('');
-                    };
-                    
-                    // Добавляем временную метку для предотвращения кэширования
-                    img.src = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
-                });
+                    }
+                    return {}; // Возвращаем пустой объект, если файла нет
+                } catch (error) {
+                    console.log('Файл descriptions.json не найден, продолжаем без описаний');
+                    return {};
+                }
             }
             
             // Основная функция загрузки данных с GitHub
@@ -76,20 +60,20 @@
                 try {
                     console.log('🔄 Загрузка списка файлов с GitHub...');
                     
-                    // Кодируем папку обратно для URL
-                    const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
-                    const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}?ref=${GITHUB_BRANCH}`;
-                    
-                    const response = await fetch(apiUrl);
-                    
-                    if (!response.ok) {
-                        throw new Error(`GitHub API ответил с кодом: ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
+                    // Загружаем описания И список файлов параллельно
+                    const [descriptionsData, filesData] = await Promise.all([
+                        loadDescriptionsJSON(),
+                        fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${encodeURIComponent(GITHUB_FOLDER)}?ref=${GITHUB_BRANCH}`)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`GitHub API: ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                    ]);
                     
                     // Фильтруем только PNG и JPG файлы
-                    const imageFiles = data.filter(item => {
+                    const imageFiles = filesData.filter(item => {
                         if (item.type !== 'file') return false;
                         const fileName = item.name.toLowerCase();
                         return fileName.endsWith('.jpg') || 
@@ -100,24 +84,22 @@
                     console.log(`🖼️ Найдено ${imageFiles.length} изображений.`);
                     
                     // Создаем массив для хранения информации об изображениях
-                    const imagesInfo = [];
-                    
-                    // Обрабатываем каждое изображение
-                    for (const item of imageFiles) {
+                    const imagesInfo = imageFiles.map(item => {
                         const displayTitle = item.name.replace(/\.[^.]+$/, "");
                         
-                        // Извлекаем description из метаданных изображения
-                        const description = await extractImageDescription(item.download_url);
+                        // Получаем описание из JSON файла (если есть)
+                        const description = descriptionsData[item.name] || 
+                                           descriptionsData[displayTitle] || '';
                         
-                        imagesInfo.push({
+                        return {
                             title: item.name,
                             displayTitle: displayTitle,
                             directUrl: item.download_url,
                             thumbnailUrl: item.download_url,
                             description: description,
                             uuid: item.sha
-                        });
-                    }
+                        };
+                    });
                     
                     return imagesInfo;
                     
@@ -206,34 +188,10 @@
                 }
             }
             
-            // Загружаем библиотеку EXIF только если есть изображения
-            async function loadEXIFLibraryIfNeeded() {
-                // Проверяем, нужна ли вообще библиотека EXIF
-                // Загружаем её асинхронно
-                if (!window.EXIF) {
-                    return new Promise((resolve) => {
-                        const script = document.createElement('script');
-                        script.src = 'https://cdn.jsdelivr.net/npm/exif-js';
-                        script.async = true;
-                        script.onload = resolve;
-                        script.onerror = resolve; // Если не загрузится, продолжаем без неё
-                        document.head.appendChild(script);
-                    });
-                }
-            }
-            
             // Основная функция инициализации
             async function initGallery() {
                 try {
-                    // Загружаем EXIF библиотеку параллельно с другими операциями
-                    const exifPromise = loadEXIFLibraryIfNeeded();
-                    
-                    // Загружаем данные с GitHub
-                    const dataPromise = loadFromGitHub();
-                    
-                    // Ждем оба промиса
-                    const [entries] = await Promise.all([dataPromise, exifPromise]);
-                    
+                    const entries = await loadFromGitHub();
                     createGalleryHTML(entries);
                 } catch (error) {
                     const container = document.getElementById(GALLERY_ID);
