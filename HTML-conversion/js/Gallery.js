@@ -125,9 +125,9 @@
 
                     if(title == "")
                     {
-                        title = Object.keys(descriptionsData).find(key => 
+                        title = descriptionsData[Object.keys(descriptionsData).find(key => 
                             key === "title"
-                        );
+                        )];
                     }
 
                     console.log(`Заголовок: ${title}.`);
