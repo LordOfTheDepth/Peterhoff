@@ -14,7 +14,7 @@
             const GITHUB_REPO = `${urlParts[3]}/${urlParts[4]}`;
             
             // Определяем ветку/коммит
-            let GITHUB_BRANCH = 'NewGallery';
+            let GITHUB_BRANCH = 'main';
             let GITHUB_FOLDER = '';
             
             // Находим индекс "tree" в URL
@@ -36,21 +36,43 @@
             async function loadDescriptionsJSON() {
                 try {
                     const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
-                    const jsonUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}/descriptions.json?ref=${GITHUB_BRANCH}`;
                     
-                    const response = await fetch(jsonUrl);
+                    // Пробуем разные имена файлов
+                    const possibleNames = [
+                        'descriptions.json',
+                        'description.json',
+                        'metadata.json',
+                        'info.json'
+                    ];
                     
-                    if (response.ok) {
-                        const fileData = await response.json();
-                        if (fileData.content) {
-                            // Декодируем base64 контент
-                            const content = atob(fileData.content.replace(/\n/g, ''));
-                            return JSON.parse(content);
+                    for (const fileName of possibleNames) {
+                        try {
+                            const jsonUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}/${fileName}?ref=${GITHUB_BRANCH}`;
+                            
+                            console.log(`Пытаюсь загрузить: ${jsonUrl}`);
+                            
+                            const response = await fetch(jsonUrl);
+                            
+                            if (response.ok) {
+                                const fileData = await response.json();
+                                if (fileData.content) {
+                                    // Декодируем base64 контент
+                                    const content = atob(fileData.content.replace(/\n/g, ''));
+                                    const jsonData = JSON.parse(content);
+                                    console.log('✅ JSON файл загружен:', jsonData);
+                                    return jsonData;
+                                }
+                            }
+                        } catch (e) {
+                            console.log(`Файл ${fileName} не найден или ошибка:`, e.message);
+                            continue;
                         }
                     }
-                    return {}; // Возвращаем пустой объект, если файла нет
+                    
+                    console.log('Не найден ни один JSON файл с описаниями');
+                    return {}; // Возвращаем пустой объект
                 } catch (error) {
-                    console.log('Файл descriptions.json не найден, продолжаем без описаний');
+                    console.log('Ошибка при загрузке JSON файла:', error.message);
                     return {};
                 }
             }
@@ -82,14 +104,37 @@
                     });
                     
                     console.log(`🖼️ Найдено ${imageFiles.length} изображений.`);
+                    console.log('Загруженные описания:', descriptionsData);
                     
                     // Создаем массив для хранения информации об изображениях
                     const imagesInfo = imageFiles.map(item => {
                         const displayTitle = item.name.replace(/\.[^.]+$/, "");
                         
-                        // Получаем описание из JSON файла (если есть)
-                        const description = descriptionsData[item.name] || 
-                                           descriptionsData[displayTitle] || '';
+                        // Пробуем найти описание разными способами
+                        let description = '???';
+                        
+                        // 1. По полному имени файла (с расширением)
+                        if (descriptionsData[item.name]) {
+                            description = descriptionsData[item.name];
+                        }
+                        // 2. По имени без расширения
+                        else if (descriptionsData[displayTitle]) {
+                            description = descriptionsData[displayTitle];
+                        }
+                        // 3. По URL-декодированному имени (если есть проблемы с кодировкой)
+                        else if (descriptionsData[decodeURIComponent(item.name)]) {
+                            description = descriptionsData[decodeURIComponent(item.name)];
+                        }
+                        // 4. Ищем ключ без учета регистра
+                        else {
+                            const lowerName = item.name.toLowerCase();
+                            for (const key in descriptionsData) {
+                                if (key.toLowerCase() === lowerName) {
+                                    description = descriptionsData[key];
+                                    break;
+                                }
+                            }
+                        }
                         
                         return {
                             title: item.name,
