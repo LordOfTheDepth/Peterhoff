@@ -32,6 +32,26 @@
             // Декодируем папку из URL-encoded формата
             GITHUB_FOLDER = decodeURIComponent(GITHUB_FOLDER);
             
+            // Функция для правильного декодирования base64 с учетом UTF-8
+            function decodeBase64UTF8(base64) {
+                try {
+                    // Преобразуем base64 в бинарные данные
+                    const binaryString = atob(base64);
+                    
+                    // Преобразуем бинарную строку в массив байт
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    
+                    // Декодируем как UTF-8
+                    return new TextDecoder('utf-8').decode(bytes);
+                } catch (error) {
+                    console.error('Ошибка декодирования base64:', error);
+                    return '';
+                }
+            }
+            
             // Функция для загрузки JSON файла с описаниями
             async function loadDescriptionsJSON() {
                 try {
@@ -56,8 +76,8 @@
                             if (response.ok) {
                                 const fileData = await response.json();
                                 if (fileData.content) {
-                                    // Декодируем base64 контент
-                                    const content = atob(fileData.content.replace(/\n/g, ''));
+                                    // Правильно декодируем base64 с UTF-8
+                                    const content = decodeBase64UTF8(fileData.content);
                                     const jsonData = JSON.parse(content);
                                     console.log('✅ JSON файл загружен:', jsonData);
                                     return jsonData;
@@ -111,28 +131,27 @@
                         const displayTitle = item.name.replace(/\.[^.]+$/, "");
                         
                         // Пробуем найти описание разными способами
-                        let description = '???';
+                        let description = '';
                         
                         // 1. По полному имени файла (с расширением)
-                        if (descriptionsData[item.name]) {
-                            description = descriptionsData[item.name];
+                        const fileNameKey = Object.keys(descriptionsData).find(key => 
+                            key === item.name || 
+                            decodeURIComponent(key) === item.name
+                        );
+                        
+                        if (fileNameKey) {
+                            description = descriptionsData[fileNameKey];
                         }
                         // 2. По имени без расширения
-                        else if (descriptionsData[displayTitle]) {
-                            description = descriptionsData[displayTitle];
-                        }
-                        // 3. По URL-декодированному имени (если есть проблемы с кодировкой)
-                        else if (descriptionsData[decodeURIComponent(item.name)]) {
-                            description = descriptionsData[decodeURIComponent(item.name)];
-                        }
-                        // 4. Ищем ключ без учета регистра
                         else {
-                            const lowerName = item.name.toLowerCase();
-                            for (const key in descriptionsData) {
-                                if (key.toLowerCase() === lowerName) {
-                                    description = descriptionsData[key];
-                                    break;
-                                }
+                            const titleKey = Object.keys(descriptionsData).find(key => 
+                                key === displayTitle || 
+                                decodeURIComponent(key) === displayTitle ||
+                                key.replace(/\.[^.]+$/, "") === displayTitle
+                            );
+                            
+                            if (titleKey) {
+                                description = descriptionsData[titleKey];
                             }
                         }
                         
