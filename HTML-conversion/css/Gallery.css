@@ -154,7 +154,6 @@
       .root-folder-header {
         padding: 12px 15px;
         margin-bottom: 15px;
-        background-color: red;
       }
       
       .root-folder-title {
@@ -165,6 +164,7 @@
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 15px;
         padding: 15px;
+  
       }
       
       .media-image-container {
