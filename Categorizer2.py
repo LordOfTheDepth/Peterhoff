@@ -49,12 +49,14 @@ def sanitize_folder_name(folder_name):
     for char in invalid_chars:
         folder_name = folder_name.replace(char, '')
     
-    # Удаляем начальные и конечные пробелы и точки
-    folder_name = folder_name.strip(' .')
-    
+
     # Ограничиваем длину (опционально)
     if len(folder_name) > 25:
         folder_name = folder_name[:25]
+        
+    # Удаляем начальные и конечные пробелы и точки
+    folder_name = folder_name.strip(' .')
+    
     
     # Если после очистки имя пустое, используем имя листа
     if not folder_name:
@@ -81,9 +83,9 @@ def get_all_files_recursive(folder_path):
 
 def DoFolder(source_folder, table, dest_folder):
     # Используем raw strings для путей в Windows
-    source_folder_fixed = source_folder.replace('\\', '\\\\') if '\\' in source_folder else source_folder
-    table_fixed = table.replace('\\', '\\\\') if '\\' in table else table
-    dest_folder_fixed = dest_folder.replace('\\', '\\\\') if '\\' in dest_folder else dest_folder
+    source_folder_fixed = source_folder
+    table_fixed = table
+    dest_folder_fixed = dest_folder
     # Проверяем существование исходной папки
     if not os.path.exists(source_folder_fixed):
         logger.error(f"Исходная папка не найдена: {source_folder_fixed}")
@@ -231,7 +233,7 @@ def DoFolder(source_folder, table, dest_folder):
                     
                     logger.debug(f"Скопирован: {file_info['rel_path']} -> {folder_name}/{final_filename}")
                 except Exception as e:
-                    logger.error(f"Ошибка при копировании {matched_file_path}: {e}")
+                    logger.error(f"Ошибка при копировании из {matched_file_path} в {dest_path}: {e}")
             else:
                 logger.warning(f"Не найден файл для: '{image_name}' на листе '{sheet_name}'")
                 
@@ -275,23 +277,24 @@ def DoFolder(source_folder, table, dest_folder):
 
 def main():
 
-
+    mainFolder = r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Sorted"
+        
     DoFolder(
-        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\до войны",
-        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\до войны\!до_войны_подписи_текст3.xlsx",
+        r"C:\Peterhof\до войны",
+        r"C:\Peterhof\до войны\!до_войны_подписи_текст3.xlsx",
         r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Sorted\до войны"
     )
     logger.debug(f"##################################################################################################################")
 
     DoFolder(
-        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\разрушения",
-        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\разрушения\!разрушения_подписи_текст3.xlsx",
+        r"C:\Peterhof\разрушения",
+        r"C:\Peterhof\разрушения\!разрушения_подписи_текст3.xlsx",
         r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Sorted\разрушения"
     )
     logger.debug(f"##################################################################################################################")
     DoFolder(
-        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\восстановление",
-        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\восстановление\!восстановление_подписи_текст3.xlsx",
+        r"C:\Peterhof\восстановление",
+        r"C:\Peterhof\восстановление\!восстановление_подписи_текст3.xlsx",
         r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Sorted\восстановление"
     )
 
