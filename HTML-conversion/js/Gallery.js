@@ -4,7 +4,7 @@
     
     // ФУНКЦИЯ для создания галереи с параметрами
     // Добавлен параметр githubToken (необязательный)
-    function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl, githubToken = "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") {
+    function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl, githubToken = "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") {
         try {
             // Извлекаем параметры из URL
             const urlParts = githubFolderUrl.split('/');
@@ -33,7 +33,15 @@
             
             // Декодируем папку из URL-encoded формата
             GITHUB_FOLDER = decodeURIComponent(GITHUB_FOLDER);
-            
+            function escapeHtmlAttribute(url) {
+            if (!url) return '';
+            return String(url)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            }
             // Функция для правильного декодирования base64 с учетом UTF-8
             function decodeBase64UTF8(base64) {
                 try {
@@ -269,9 +277,8 @@
                                    data-fancybox="${GALLERY_ID}"
                                    data-caption="<div style='text-align:center;'>
                                                    <h4 style='margin:0 0 8px 0; color:white;'>${escapeHtml(displayTitle)}</h4>
-                                                   ${description ? `<p style='margin:0; color:#ccc; font-size:14px; max-width:600px;'>${escapeHtml(description)}</p>` : ''}
-                                                 </div>"
-                                   data-thumb="${entry.thumbnailUrl}">
+                                                   ${description ? `<p style='margin:0; color:#ccc; font-size:14px; max-width:200px;'>${escapeHtml(description)}</p>` : ''}
+                                                 </div>">
                                   
                                   <div class="media-image-container">
                                     <img src="${entry.thumbnailUrl}" 

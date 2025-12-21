@@ -29,9 +29,18 @@
 
 }
 
+.root-container
+{
+    align-items: "center";
+}
+.root-container .container
+{
+    align-self: "center";
+}
 .container
 {
     max-width: 1600px;
+    align-self: center;
 }
 .portlet
 {

@@ -164,7 +164,7 @@ def DoFolder(source_folder, table, dest_folder):
         # Создаем папку для листа
         sheet_folder = os.path.join(dest_folder_fixed, folder_name)
         if subfolder_name != "":
-            sheet_folder = os.path.join(sheet_folder, subfolder_name[:25])
+            sheet_folder = os.path.join(sheet_folder, subfolder_name[:25].strip(" ."))
         os.makedirs(sheet_folder, exist_ok=True)
 
         # Создаем словарь для описаний

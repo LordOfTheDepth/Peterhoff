@@ -93,7 +93,7 @@ class GitHubFolderScanner {
      * @param {string} githubToken - Необязательный токен GitHub для увеличения лимита запросов
      * @returns {Promise<Array<string>>} - Массив URL всех вложенных папок
      */
-    static async scanFolder(githubUrl, githubToken = "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") {
+    static async scanFolder(githubUrl, githubToken = "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") {
         try {
             // Парсим URL GitHub
             const { repo, branch, folderPath } = this.parseGitHubUrl(githubUrl);
@@ -107,13 +107,7 @@ class GitHubFolderScanner {
             // Добавляем папки в правильном порядке: сначала папки первого уровня, затем их подпапки
             this.collectFoldersInOrder(foldersInfo, allFolders);
             
-            // Добавляем исходную папку в начало массива, только если в ней есть изображения
-            if (foldersInfo.hasImagesInCurrentFolder || foldersInfo.hasImagesInSubfolders) {
-                allFolders.unshift(githubUrl);
-                console.log(`✅ Исходная папка содержит изображения, добавляем в список`);
-            } else {
-                console.log(`⚠️ Исходная папка не содержит изображений, пропускаем`);
-            }
+            
             
             console.log(`✅ Найдено ${allFolders.length} папок с изображениями`);
             return allFolders;
@@ -154,7 +148,7 @@ class GitHubFolderScanner {
                     path: fullFolderPath,
                     url: this.buildGitHubUrl(repo, branch, fullFolderPath),
                     info: subfolderInfo,
-                    hasImagesInSubfolder: subfolderInfo.hasImagesInCurrentFolder || subfolderInfo.hasImagesInSubfolders
+                    hasImagesInSubfolder: subfolderInfo.hasImagesInCurrentFolder
                 });
                 
                 if (subfolderInfo.hasImagesInCurrentFolder || subfolderInfo.hasImagesInSubfolders) {
