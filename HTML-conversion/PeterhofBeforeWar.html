@@ -40,6 +40,7 @@
 <div id="gallery-4"></div>
 <div id="gallery-5"></div>
 <div id="gallery-6"></div>
+<div id="gallery-7"></div>
 
 <div id="footer-container"></div>
 
@@ -47,14 +48,15 @@
 
   createElement("background","html/Background.html")
   
-  createElement("header","html/PeterhofHeader.html")
-  
+  createElement("header","html/PeterhofHeader.html").then(() => {insertHtml("page-title","Петергоф до войны")}).then(() => 
+{
+    insertHtml("page-title-img", "<img src = https://github.com/LordOfTheDepth/Peterhoff/blob/NewGallery/Misc/verh_Ptrg.jpg?raw=true> </img>"
+
+    )
+});
   createElement("buttons","html/PeterhofButtons.html")
 
   createElement("footer-container","html/Footer.html")
-
-  createGallery("gallery-1","" , "",
-  'https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery/Sorted/%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B/%D0%91%D0%BE%D0%BB%D1%8C%D1%88%D0%BE%D0%B9%20%D0%B4%D0%B2%D0%BE%D1%80%D0%B5%D1%86');
 
 </script>
 
@@ -81,9 +83,12 @@
     createGallery("gallery-6","" , "",
 "https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery/Sorted/%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B/%D0%9D%D0%B8%D0%B6%D0%BD%D0%B8%D0%B9%20%D0%BF%D0%B0%D1%80%D0%BA"
 );
+    createGallery("gallery-7","null" , "",
+"https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery/Sorted/%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B/%D0%9D%D0%B8%D0%B6%D0%BD%D0%B8%D0%B9%20%D0%BF%D0%B0%D1%80%D0%BA/%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B3%D0%BE%D1%84.%20%D0%92%D0%B8%D0%B4%20%D0%BD%D0%B0%20%D1%84%D0%BE%D0%BD%D1%82%D0%B0%D0%BD%D1%8B"
+);
 </script>
 
 <script>
-  window.setTimeout(insertHtml("page-title","<h1>Петергоф до войны</h1>", 2000));
+  
   
 </script>

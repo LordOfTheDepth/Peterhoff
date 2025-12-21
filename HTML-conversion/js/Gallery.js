@@ -1,8 +1,10 @@
+
 (function() {
     'use strict';
     
     // ФУНКЦИЯ для создания галереи с параметрами
-    function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl) {
+    // Добавлен параметр githubToken (необязательный)
+    function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl, githubToken = "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") {
         try {
             // Извлекаем параметры из URL
             const urlParts = githubFolderUrl.split('/');
@@ -61,6 +63,36 @@
                 return text.substring(0, maxLength) + ' ...';
             }
             
+            // Функция для выполнения авторизованных запросов к GitHub API
+            async function fetchGitHubAPI(url) {
+                const headers = {};
+                
+                // Добавляем токен авторизации, если он предоставлен
+                if (githubToken) {
+                    headers['Authorization'] = `token ${githubToken}`;
+                }
+                
+                try {
+                    const response = await fetch(url, { headers });
+                    
+                    // Проверяем статус ответа
+                    if (!response.ok) {
+                        if (response.status === 403) {
+                            // Превышен лимит запросов
+                            const rateLimitReset = response.headers.get('X-RateLimit-Reset');
+                            const resetTime = rateLimitReset ? new Date(rateLimitReset * 1000).toLocaleTimeString() : 'неизвестно';
+                            console.warn(`Превышен лимит запросов GitHub API. Восстановление в: ${resetTime}`);
+                        }
+                        throw new Error(`GitHub API: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    return response;
+                } catch (error) {
+                    console.error('Ошибка при запросе к GitHub API:', error);
+                    throw error;
+                }
+            }
+            
             // Функция для загрузки JSON файла с описаниями
             async function loadDescriptionsJSON() {
                 try {
@@ -80,7 +112,7 @@
                             
                             console.log(`Пытаюсь загрузить: ${jsonUrl}`);
                             
-                            const response = await fetch(jsonUrl);
+                            const response = await fetchGitHubAPI(jsonUrl);
                             
                             if (response.ok) {
                                 const fileData = await response.json();
@@ -111,17 +143,15 @@
                 try {
                     console.log('🔄 Загрузка списка файлов с GitHub...');
                     
+                    const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
+                    
                     // Загружаем описания И список файлов параллельно
-                    const [descriptionsData, filesData] = await Promise.all([
+                    const [descriptionsData, filesResponse] = await Promise.all([
                         loadDescriptionsJSON(),
-                        fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${encodeURIComponent(GITHUB_FOLDER)}?ref=${GITHUB_BRANCH}`)
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error(`GitHub API: ${response.status}`);
-                                }
-                                return response.json();
-                            })
+                        fetchGitHubAPI(`https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}?ref=${GITHUB_BRANCH}`)
                     ]);
+                    
+                    const filesData = await filesResponse.json();
                     
                     // Фильтруем только PNG и JPG файлы
                     const imageFiles = filesData.filter(item => {

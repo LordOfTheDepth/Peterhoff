@@ -51,8 +51,7 @@ def sanitize_folder_name(folder_name):
     
 
     # Ограничиваем длину (опционально)
-    if len(folder_name) > 25:
-        folder_name = folder_name[:25]
+
         
     # Удаляем начальные и конечные пробелы и точки
     folder_name = folder_name.strip(' .')
@@ -165,7 +164,7 @@ def DoFolder(source_folder, table, dest_folder):
         # Создаем папку для листа
         sheet_folder = os.path.join(dest_folder_fixed, folder_name)
         if subfolder_name != "":
-            sheet_folder = os.path.join(sheet_folder, subfolder_name)
+            sheet_folder = os.path.join(sheet_folder, subfolder_name[:25])
         os.makedirs(sheet_folder, exist_ok=True)
 
         # Создаем словарь для описаний
