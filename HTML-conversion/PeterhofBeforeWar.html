@@ -1,51 +1,19 @@
 <link rel="stylesheet" href="css/MainStyle.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css" />
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
-<div id="page-background" style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(white 0%, var(--main-bkg-color) 50% , var(--main-bkg-color) 100%);
-    z-index: -1000;
-    pointer-events: none;
-"></div>
+<script src="js/Gallery.js"></script>
+<script src="js/Utills.js"></script>
 
-<div class="image-overlay-container">
-    
-      <img src="https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_Ptrg.jpg?raw=true">
-          <div class = "gradient"> </div>
-          <div class="overlay-text">
-            Петергоф
-          </div>
-          
-</div> 
-<div class="three-buttons-row">
-    <div class="button-container ">
-        <div class="button bright hover-lift">
-           <a href="https://spbarchives.ru/2448">До войны</a>
-        </div>
-    </div>
-  
-    <div class="button-container">
-        <div class="button dull hover-lift">
-           <a href="https://spbarchives.ru/2449">Разрушение</a>
-        </div>
-    </div>
-  
-    <div class="button-container">
-        <div class="button light hover-lift">
-            <a href="https://spbarchives.ru/2450">Восстановление</a>
-        </div>
-    </div>
-</div>
+
+<div id="background"></div>
+<div id="header"></div>
+<div id="buttons"></div>
 
 <div class="main-text-container">
-    <div class="header-content align-center size-large">
+    <h1 class="header-content align-center">
 Петергоф до войны: Императорская жемчужина у Финского залива
-(1705–1941 гг.)
-  </div>
+<span class = "nobr">(1705–1941 гг.)</span>
+    </h1>
   <div class="main-text-content align-justify size-medium">
 <p>Основанный Петром Великим в 1714 году как триумфальный памятник победам России в Северной войне, Петергоф к началу XX века превратился в один из величайших дворцово-парковых ансамблей мира, где барочное великолепие, инженерный генийи художественное совершенство слились в гармоничное целое. Его история началась
 с простого «путевого двора» для остановок царя по пути в Кронштадт (первое упоминание в 1705 году), но уже к 1714 году, вдохновленный Версалем, Петр I заложил здесь парадную резиденцию, лично создавая эскизы фонтанов и планировки парков. Композиционным центром стал Большой дворец (изначально «Верхние палаты»), возведенный по проекту французского архитектора Жана-Батиста Леблона, а жемчужиной петровской эпохи – приморский Монплезир («мое удовольствие»), где царь разместил первую в России картинную галерею с полотнами фламандских мастеров. У зеркальных прудов возник изящный дворец Марли, названный в память о резиденции Людовика XIV. Подлинным чудом стала фонтанная система инженера Василия Туволкова: 25 км самотечного водовода от Ропшинских высот, питавшего 150+ фонтанов без единого насоса – технологический триумф, не имевший аналогов в Европе.</p>
@@ -69,10 +37,21 @@
 
 <div id="gallery-2"></div>
 
+<div id="footer-container"></div>
 
-<script src="js/Gallery.js"></script>
+
+
 <script>
+
+    createElement("background","Html parts/Background.html")
+    
+    createElement("header","Html parts/PeterhofHeader.html")
+    
+    createElement("buttons","Html parts/PeterhofButtons.html")
+
     createGallery("gallery-1","" , "",
     'https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery/Sorted/%D0%B2%D0%BE%D1%81%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5/%D0%91%D0%BE%D0%BB%D1%8C%D1%88%D0%BE%D0%B9%20%D0%B4%D0%B2%D0%BE%D1%80%D0%B5%D1%86');
+
+    createElement("footer-container","Html parts/Footer.html")
 </script>
 
