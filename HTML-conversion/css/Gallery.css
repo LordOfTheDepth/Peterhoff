@@ -70,6 +70,7 @@
       object-fit: cover;
       display: block;
       transition: transform 0.3s ease;
+      image-rendering: optimizeQuality;
     }
 
     .media-item:hover .media-image {
@@ -98,7 +99,9 @@
       line-height: 1.4;
       margin-bottom: 8px;
       text-decoration: none;
+      
     }
+    
 
     .media-meta {
       font-size: 11px;
@@ -151,6 +154,7 @@
       .root-folder-header {
         padding: 12px 15px;
         margin-bottom: 15px;
+        background-color: red;
       }
       
       .root-folder-title {
@@ -165,6 +169,9 @@
       
       .media-image-container {
         height: 150px;
+      }
+      .fancybox__container {
+          --fancybox-thumbs-width: 60px;
       }
     }
 
@@ -185,12 +192,6 @@
         color: inherit;
         display: block;
         
-    }
-
-    @media (max-width: 768px) {
-        .fancybox__container {
-            --fancybox-thumbs-width: 60px;
-        }
     }
 
     .loading {

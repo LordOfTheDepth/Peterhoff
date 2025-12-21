@@ -52,6 +52,15 @@
                 }
             }
             
+            // Функция для усечения текста с добавлением "..."
+            function truncateText(text, maxLength) {
+                if (!text || text.length <= maxLength) {
+                    return text;
+                }
+                // Обрезаем до maxLength символов и добавляем многоточие
+                return text.substring(0, maxLength) + ' ...';
+            }
+            
             // Функция для загрузки JSON файла с описаниями
             async function loadDescriptionsJSON() {
                 try {
@@ -123,22 +132,20 @@
                                fileName.endsWith('.png');
                     });
 
-                    if(title == "")
-                    {
+                    if(title == "") {
                         title = descriptionsData[Object.keys(descriptionsData).find(key => 
-                            key === "title"
+                            key === "__title__"
                         )];
                     }
 
-                    if(subtitle == "")
-                    {
+                    if(subtitle == "") {
                         subtitle = descriptionsData[Object.keys(descriptionsData).find(key => 
-                            key === "subtitle"
+                            key === "__subtitle__"
                         )];
                     }
 
                     console.log(`Заголовок: ${title}.`);
-                    console.log(`Заголовок: ${title}.`);
+                    console.log(`Подзаголовок: ${subtitle}.`);
                     console.log(`🖼️ Найдено ${imageFiles.length} изображений.`);
                     console.log('Загруженные описания:', descriptionsData);
                     
@@ -171,12 +178,16 @@
                             }
                         }
                         
+                        // Создаем усеченную версию для миниатюры
+                        const truncatedDescription = truncateText(description, 100);
+                        
                         return {
                             title: item.name,
                             displayTitle: displayTitle,
                             directUrl: item.download_url,
                             thumbnailUrl: item.download_url,
                             description: description,
+                            truncatedDescription: truncatedDescription,
                             uuid: item.sha
                         };
                     });
@@ -206,17 +217,21 @@
                     `;
                     return;
                 }
+                
                 let galleryHtml = "";
-                if(title != "null")
-                    galleryHtml += `<div class="gallery-title"><h1>${title}</h1></div>`
-                if(subtitle != "null")
-                    galleryHtml += `<div class="gallery-subtitle"><h1>${subtitle}</h1></div>`
+                if(title && title !== "null") {
+                    galleryHtml += `<div class="gallery-title"><h1>${escapeHtml(title)}</h1></div>`;
+                }
+                if(subtitle && subtitle !== "null") {
+                    galleryHtml += `<div class="gallery-subtitle"><h2>${escapeHtml(subtitle)}</h2></div>`;
+                }
 
-                 galleryHtml += `
+                galleryHtml += `
                     <div class="media-gallery-captions">
                         ${entries.map((entry) => {
                             const displayTitle = entry.displayTitle;
                             const description = entry.description || '';
+                            const truncatedDescription = entry.truncatedDescription || '';
                             
                             return `
                                 <a href="${entry.directUrl}" 
@@ -237,7 +252,7 @@
                                   
                                   <div class="media-caption">
                                     <div class="media-title">${escapeHtml(displayTitle)}</div>
-                                    ${description ? `<div class="media-description">${escapeHtml(description)}</div>` : ''}
+                                    ${truncatedDescription ? `<div class="media-description" title="${escapeHtml(description)}">${escapeHtml(truncatedDescription)}</div>` : ''}
                                   </div>
                                 </a>
                             `;
