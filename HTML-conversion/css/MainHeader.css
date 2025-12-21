@@ -36,3 +36,8 @@
   font-size: 2vw;
   font-family: var(--font-heading);
 }
+.main-header-logos-container
+{
+  top: 50px;
+  right: 50px;
+}
