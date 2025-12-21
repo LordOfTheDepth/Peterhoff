@@ -4,7 +4,7 @@
     
     // ФУНКЦИЯ для создания галереи с параметрами
     // Добавлен параметр githubToken (необязательный)
-    function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl, githubToken = "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") {
+    function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl, githubToken = "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") {
         try {
             // Извлекаем параметры из URL
             const urlParts = githubFolderUrl.split('/');
@@ -275,10 +275,7 @@
                                 <a href="${entry.directUrl}" 
                                    class="media-item"
                                    data-fancybox="${GALLERY_ID}"
-                                   data-caption="<div style='text-align:center;'>
-                                                   <h4 style='margin:0 0 8px 0; color:white;'>${escapeHtml(displayTitle)}</h4>
-                                                   ${description ? `<p style='margin:0; color:#ccc; font-size:14px; max-width:200px;'>${escapeHtml(description)}</p>` : ''}
-                                                 </div>">
+                                  >
                                   
                                   <div class="media-image-container">
                                     <img src="${entry.thumbnailUrl}" 

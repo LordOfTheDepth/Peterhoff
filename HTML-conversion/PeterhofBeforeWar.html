@@ -63,31 +63,44 @@
 </script>
 
 <script>
-
-  createGallery("gallery-1","" , "",
-'https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery/Sorted/%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B/%D0%91%D0%BE%D0%BB%D1%8C%D1%88%D0%BE%D0%B9%20%D0%B4%D0%B2%D0%BE%D1%80%D0%B5%D1%86'
-  );
-
-    createGallery("gallery-2","" , "",
-"https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery/Sorted/%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B/%D0%91%D0%BE%D0%BB%D1%8C%D1%88%D0%BE%D0%B9%20%D0%BA%D0%B0%D1%81%D0%BA%D0%B0%D0%B4%20%20%D0%B8%20%D0%A1%D0%B0%D0%BC%D1%81%D0%BE%D0%BD"
-    );
-
-    createGallery("gallery-3","" , "",
-"https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery/Sorted/%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B/%D0%92%D0%B5%D1%80%D1%85%D0%BD%D0%B8%D0%B9%20%D0%BF%D0%B0%D1%80%D0%BA%20(%D1%81%D0%B0%D0%B4)"
-);
-
-    createGallery("gallery-4","" , "",
-"https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery/Sorted/%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B/%D0%94%D0%B2%D0%BE%D1%80%D0%B5%D1%86%20%D0%9C%D0%B0%D1%80%D0%BB%D0%B8"
-);
-    createGallery("gallery-5","" , "",
-"https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery/Sorted/%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B/%D0%94%D0%B2%D0%BE%D1%80%D0%B5%D1%86%20%D0%9C%D0%BE%D0%BD%D0%BF%D0%BB%D0%B5%D0%B7%D0%B8%D1%80"
-);
-    createGallery("gallery-6","" , "",
-"https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery/Sorted/%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B/%D0%9D%D0%B8%D0%B6%D0%BD%D0%B8%D0%B9%20%D0%BF%D0%B0%D1%80%D0%BA"
-);
-    createGallery("gallery-7","null" , "",
-"https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery/Sorted/%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B/%D0%9D%D0%B8%D0%B6%D0%BD%D0%B8%D0%B9%20%D0%BF%D0%B0%D1%80%D0%BA/%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B3%D0%BE%D1%84.%20%D0%92%D0%B8%D0%B4%20%D0%BD%D0%B0%20%D1%84%D0%BE%D0%BD%D1%82%D0%B0%D0%BD%D1%8B"
-);
+    const initialUrl = "https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery/Sorted/%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B";
+    
+    GitHubFolderScanner.scanFolder(initialUrl)
+        .then(folders => {
+            console.log('Всего папок:', folders.length);
+            
+            // Парсим начальную папку
+            const initialInfo = GitHubFolderScanner.parseGitHubUrl(initialUrl);
+            const initialPath = initialInfo.folderPath || "";
+            
+            folders.forEach((folderUrl, index) => {
+                // Парсим текущую папку
+                const currentInfo = GitHubFolderScanner.parseGitHubUrl(folderUrl);
+                const currentPath = currentInfo.folderPath || "";
+                
+                // Вычисляем относительный путь
+                const relativePath = currentPath.replace(initialPath, '').replace(/^\/+/, '');
+                
+                // Подсчитываем уровень вложенности по количеству слэшей в относительном пути
+                const depth = relativePath ? relativePath.split('/').length : 0;
+                
+                // Определяем заголовок
+                let title = ""; // По умолчанию пустой
+                if (depth > 1) {
+                    title = "null"; // Если глубина больше 1
+                }
+                
+                createGallery(
+                    `gallery-${index + 1}`,
+                    title,  // "" или "null"
+                    "",
+                    folderUrl
+                );
+            });
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+        });
 </script>
 
 <script>

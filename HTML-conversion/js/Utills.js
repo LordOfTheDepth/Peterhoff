@@ -93,7 +93,7 @@ class GitHubFolderScanner {
      * @param {string} githubToken - Необязательный токен GitHub для увеличения лимита запросов
      * @returns {Promise<Array<string>>} - Массив URL всех вложенных папок
      */
-    static async scanFolder(githubUrl, githubToken = "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") {
+    static async scanFolder(githubUrl, githubToken = "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") {
         try {
             // Парсим URL GitHub
             const { repo, branch, folderPath } = this.parseGitHubUrl(githubUrl);
