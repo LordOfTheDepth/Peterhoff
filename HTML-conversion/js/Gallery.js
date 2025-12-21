@@ -2,7 +2,7 @@
     'use strict';
     
     // ФУНКЦИЯ для создания галереи с параметрами
-    function createGallery(GALLERY_ID, title, githubFolderUrl) {
+    function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl) {
         try {
             // Извлекаем параметры из URL
             const urlParts = githubFolderUrl.split('/');
@@ -130,6 +130,14 @@
                         )];
                     }
 
+                    if(subtitle == "")
+                    {
+                        subtitle = descriptionsData[Object.keys(descriptionsData).find(key => 
+                            key === "subtitle"
+                        )];
+                    }
+
+                    console.log(`Заголовок: ${title}.`);
                     console.log(`Заголовок: ${title}.`);
                     console.log(`🖼️ Найдено ${imageFiles.length} изображений.`);
                     console.log('Загруженные описания:', descriptionsData);
@@ -198,12 +206,13 @@
                     `;
                     return;
                 }
-                
-                const galleryHtml = `
+                let galleryHtml = "";
+                if(title != "null")
+                    galleryHtml += `<div class="gallery-title"><h1>${title}</h1></div>`
+                if(subtitle != "null")
+                    galleryHtml += `<div class="gallery-subtitle"><h1>${subtitle}</h1></div>`
 
-                    <div class="gallery-title">
-                        <h1>${title}</h1>
-                    </div>
+                 galleryHtml += `
                     <div class="media-gallery-captions">
                         ${entries.map((entry) => {
                             const displayTitle = entry.displayTitle;

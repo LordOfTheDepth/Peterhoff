@@ -7,9 +7,7 @@ from pathlib import Path
 import logging
 
 # ========== НАСТРОЙКИ ==========
-source_folder = r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\восстановление"  # Замените на ваш путь
-table = r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\восстановление\восстановление_подписи_текст.xlsx"  # Замените на ваш путь
-dest_folder = r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Test"  # Замените на ваш путь
+
 # ===============================
 
 # Настройка логирования
@@ -43,6 +41,27 @@ def normalize_filename(filename):
     normalized = ''.join(normalized_chars)
     return normalized.lower()
 
+def sanitize_folder_name(folder_name):
+    """Очищает имя папки от недопустимых символов"""
+    # Удаляем недопустимые символы для имен папок в Windows
+    # <>:"/\|?* а также управляющие символы
+    invalid_chars = '<>:"/\\|?*\n'
+    for char in invalid_chars:
+        folder_name = folder_name.replace(char, '')
+    
+    # Удаляем начальные и конечные пробелы и точки
+    folder_name = folder_name.strip(' .')
+    
+    # Ограничиваем длину (опционально)
+    if len(folder_name) > 255:
+        folder_name = folder_name[:255]
+    
+    # Если после очистки имя пустое, используем имя листа
+    if not folder_name:
+        return "Без_названия"
+    
+    return folder_name
+
 def get_all_files_recursive(folder_path):
     """Получает все файлы из папки и всех ее подпапок"""
     all_files = {}
@@ -60,7 +79,7 @@ def get_all_files_recursive(folder_path):
     
     return all_files
 
-def main():
+def DoFolder(source_folder, table, dest_folder):
     # Используем raw strings для путей в Windows
     source_folder_fixed = source_folder.replace('\\', '\\\\') if '\\' in source_folder else source_folder
     table_fixed = table.replace('\\', '\\\\') if '\\' in table else table
@@ -122,20 +141,45 @@ def main():
         
         ws = wb[sheet_name]
         
+        # Получаем название папки из первой строки, второго столбца (столбец B)        
+        folder_name_cell = ws.cell(row=2, column=1).value
+        if folder_name_cell:
+            folder_name = str(folder_name_cell).strip()
+            folder_name = sanitize_folder_name(folder_name)
+        else:
+            logger.error(f"Не найдена ячейка с заголовком на листе: {sheet_name}")
+            folder_name = "Неизвестная папка"
+
+        subfolder_name_cell = ws.cell(row=2, column=2).value
+        if subfolder_name_cell:
+            subfolder_name = str(subfolder_name_cell).strip()
+            subfolder_name = sanitize_folder_name(subfolder_name)
+        else:
+            subfolder_name = ""
+
+        logger.info(f"Создаю папку: {folder_name}")
+        if subfolder_name:
+            logger.info(f"Подпапка: {subfolder_name}")
+        
         # Создаем папку для листа
-        sheet_folder = os.path.join(dest_folder_fixed, sheet_name)
+        sheet_folder = os.path.join(dest_folder_fixed, folder_name)
+        if subfolder_name != "":
+            sheet_folder = os.path.join(sheet_folder, subfolder_name)
         os.makedirs(sheet_folder, exist_ok=True)
-        
+
         # Создаем словарь для описаний
+        # Сохраняем старую структуру, но добавляем title и subtitle как первые ключи
         descriptions = {}
-        
+        descriptions["__title__"] = folder_name
+        descriptions["__subtitle__"] = subfolder_name if subfolder_name else ""
+
         # Собираем статистику
         row_count = 0
         copied_count = 0
         not_found_count = 0
         multiple_found_count = 0
         
-        for row in ws.iter_rows(min_row=1, values_only=True):
+        for row in ws.iter_rows(min_row=4, values_only=True):
             # Пропускаем пустые строки
             if not row or row[0] is None:
                 continue
@@ -182,15 +226,15 @@ def main():
                     
                     shutil.copy2(matched_file_path, dest_path)
                     
-                    # Добавляем в словарь описаний
+                    # Добавляем в словарь описаний (старая структура)
                     descriptions[final_filename] = description
                     copied_count += 1
                     
-                    logger.debug(f"Скопирован: {file_info['rel_path']} -> {sheet_name}/{final_filename}")
+                    logger.debug(f"Скопирован: {file_info['rel_path']} -> {folder_name}/{final_filename}")
                 except Exception as e:
                     logger.error(f"Ошибка при копировании {matched_file_path}: {e}")
             else:
-                logger.warning(f"Не найден файл для: '{image_name}' (нормализовано: '{normalized_search}') на листе '{sheet_name}'")
+                logger.warning(f"Не найден файл для: '{image_name}' на листе '{sheet_name}'")
                 
                 # Для отладки: выводим похожие имена
                 similar = [k for k in normalized_map.keys() if normalized_search in k or k in normalized_search]
@@ -204,7 +248,8 @@ def main():
         try:
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(descriptions, f, ensure_ascii=False, indent=4)
-            logger.info(f"Создан {json_path} с {len(descriptions)} записями")
+            logger.info(f"Создан {json_path} с {len(descriptions) - 2} записями файлов")  # -2 потому что title и subtitle
+            logger.info(f"Title: {descriptions['__title__']}, Subtitle: {descriptions['__subtitle__']}")
         except Exception as e:
             logger.error(f"Ошибка при сохранении JSON: {e}")
         
@@ -214,10 +259,11 @@ def main():
         if not_found_count > 0:
             report_path = os.path.join(sheet_folder, "not_found_report.txt")
             try:
-                # Чтобы создать отчет, нужно перебрать строки еще раз или сохранять данные
-                # Пока просто создаем файл с общей статистикой
                 with open(report_path, 'w', encoding='utf-8') as f:
                     f.write(f"Не найдено файлов: {not_found_count} из {row_count}\n")
+                    f.write(f"Имя папки: {folder_name}\n")
+                    f.write(f"Имя подпапки: {subfolder_name if subfolder_name else '(нет)'}\n")
+                    f.write(f"Исходный лист: {sheet_name}\n")
             except Exception as e:
                 logger.error(f"Ошибка при сохранении отчета: {e}")
     
@@ -227,10 +273,29 @@ def main():
     logger.info("=== ДИАГНОСТИКА ===")
     logger.info(f"Всего файлов в исходной папке: {file_count}")
     logger.info(f"Уникальных нормализованных имен: {len(normalized_map)}")
-    
-    # Примеры нормализованных имен
-    sample_keys = list(normalized_map.keys())[:10]
-    logger.info(f"Примеры нормализованных имен файлов: {sample_keys}")
+
+def main():
+
+
+    DoFolder(
+        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\до войны",
+        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\до войны\!!до_войны_подписи_текст2.xlsx",
+        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Sorted\до войны"
+    )
+    logger.debug(f"##################################################################################################################")
+
+    DoFolder(
+        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\разрушения",
+        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\разрушения\!!разрушения_подписи_текст2.xlsx",
+        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Sorted\разрушения"
+    )
+    logger.debug(f"##################################################################################################################")
+    DoFolder(
+        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\восстановление",
+        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\восстановление\!!восстановление_подписи_текст2.xlsx",
+        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Sorted\восстановление"
+    )
+
 
 if __name__ == "__main__":
     main()

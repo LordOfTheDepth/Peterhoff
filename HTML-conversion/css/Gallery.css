@@ -6,10 +6,25 @@
       margin-bottom: 20px;
       margin-top: 20px;
     }
+    .gallery-subtitle {
+      background-color: var(--lightBKG);
+      padding: 15px 20px;
+      text-align: left;
+      margin-bottom: 10px;
+      margin-top: 10px;
+    }
 
     .gallery-title * {
       
       font-size: 18px;
+      font-weight: 600;
+      color: var(--dark-color);
+      margin: 0;
+
+    }
+        .gallery-subtitle * {
+      
+      font-size: 12px;
       font-weight: 600;
       color: var(--dark-color);
       margin: 0;
