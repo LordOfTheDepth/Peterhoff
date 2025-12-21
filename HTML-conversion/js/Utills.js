@@ -5,7 +5,7 @@ function createElement(id, link)
     fetch(link)
         .then(response => response.text())
         .then(html => {
-            document.getElementById(id).innerHTML = html;
+            insertHtml(id,html);
         })
         .catch(error => {
             console.error('Ошибка загрузки футера:', error);
@@ -17,3 +17,12 @@ function createElement(id, link)
         });
 }
 
+function insertHtml(id, html)
+{
+    var element = document.getElementById(id)
+    if(element)
+        element.innerHTML = html
+    else
+        console.log(`Элемент с id ${id} не найден`);
+        
+}

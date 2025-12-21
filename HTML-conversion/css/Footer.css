@@ -20,7 +20,8 @@
 }
 
 .site-footer {
-  width: 100%;
+
+  margin-top: 20px;
   min-height: 100px;
   background-color: var(--lightBKG, #f8f9fa);
   padding: 24px;
