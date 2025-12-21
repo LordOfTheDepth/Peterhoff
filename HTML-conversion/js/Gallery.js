@@ -212,7 +212,7 @@
                 if (!entries || entries.length === 0) {
                     container.innerHTML = `
                         <div class="no-media">
-                          <p>В указанной папке на GitHub не найдено файлов-изображений.</p>
+                          <p>Ошибка соединения. Изображения не найдены.</p>
                         </div>
                     `;
                     return;

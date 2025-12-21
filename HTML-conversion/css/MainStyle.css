@@ -82,17 +82,17 @@
     --dullBKG: #6a8696;
     --gradient-bkg: linear-gradient(rgb(221, 217, 212) 0%, #bcb2c9 20%, #bcb2c9 80%, rgb(226, 223, 216) 100%);
 }
-.light
+.light *
 {
     background-color: var(--lightBKG) !important;
 }
-.bright
+.bright *
 {
     background-color: var(--brightBKG) !important;
 }
-.dull
+.dull *
 {
-    background-color: var(--dullBKG);
+    background-color: var(--dullBKG) !important;
 }
 
 
@@ -150,4 +150,6 @@
   display: none;
 }
 
-
+.nobr {
+  white-space: nowrap;
+}

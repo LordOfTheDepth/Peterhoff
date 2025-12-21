@@ -2,14 +2,13 @@
 .main-header-container {
   position: relative;
   width: 100%;
+  background-color: #b0c0a5;
 }
 
 .main-header-background {
-  width: 100%;
   bottom: 0;
   left: 0;
-  min-height: 900px;
-  object-fit: contain;
+  width:  100%;
 }
 
 .main-header-overlay-text {
@@ -19,7 +18,7 @@
   word-break: keep-all;
   line-height: 1;
   position: absolute;
-  top: 20%;
+  top: 200px;
   left: 40%;
   right: 5%;
   color: var(--dark-color);
@@ -39,6 +38,11 @@
 {
   top: 50px;
   right: 50px;
-  max-height: 50px;
   position: absolute;
+
+}
+.main-header-logos-container *
+{
+  max-height: 120px;
+
 }
