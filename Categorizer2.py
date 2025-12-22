@@ -5,6 +5,7 @@ import shutil
 from openpyxl import load_workbook
 from pathlib import Path
 import logging
+from datetime import datetime
 
 # ========== НАСТРОЙКИ ==========
 
@@ -85,6 +86,7 @@ def DoFolder(source_folder, table, dest_folder):
     source_folder_fixed = source_folder
     table_fixed = table
     dest_folder_fixed = dest_folder
+    
     # Проверяем существование исходной папки
     if not os.path.exists(source_folder_fixed):
         logger.error(f"Исходная папка не найдена: {source_folder_fixed}")
@@ -97,6 +99,9 @@ def DoFolder(source_folder, table, dest_folder):
     
     # Создаем конечную папку, если ее нет
     os.makedirs(dest_folder_fixed, exist_ok=True)
+    
+    # Создаем список для сбора информации о не найденных файлах
+    not_found_reports = []
     
     # Загружаем все файлы из source_folder и всех подпапок
     logger.info(f"Поиск файлов в {source_folder_fixed} и подпапках...")
@@ -179,6 +184,9 @@ def DoFolder(source_folder, table, dest_folder):
         not_found_count = 0
         multiple_found_count = 0
         
+        # Список не найденных файлов для этого листа
+        sheet_not_found = []
+        
         for row in ws.iter_rows(min_row=4, values_only=True):
             # Пропускаем пустые строки
             if not row or row[0] is None:
@@ -227,7 +235,7 @@ def DoFolder(source_folder, table, dest_folder):
                     shutil.copy2(matched_file_path, dest_path)
                     
                     # Добавляем в словарь описаний (старая структура)
-                    descriptions[final_filename] = description
+                    descriptions[final_filename] = description.split("\n")[0]
                     copied_count += 1
                     
                     logger.debug(f"Скопирован: {file_info['rel_path']} -> {folder_name}/{final_filename}")
@@ -236,12 +244,24 @@ def DoFolder(source_folder, table, dest_folder):
             else:
                 logger.warning(f"Не найден файл для: '{image_name}' на листе '{sheet_name}'")
                 
+                # Сохраняем информацию о не найденном файле
+                sheet_not_found.append({
+                    'title': folder_name,
+                    'subtitle': subfolder_name,
+                    'name': image_name,
+                    'sheet': sheet_name
+                })
+                
                 # Для отладки: выводим похожие имена
                 similar = [k for k in normalized_map.keys() if normalized_search in k or k in normalized_search]
                 if similar:
                     logger.debug(f"Похожие нормализованные имена: {similar[:5]}")
                 
                 not_found_count += 1
+        
+        # Добавляем не найденные файлы из этого листа в общий отчет
+        if sheet_not_found:
+            not_found_reports.extend(sheet_not_found)
         
         # Сохраняем descriptions.json
         json_path = os.path.join(sheet_folder, "descriptions.json")
@@ -255,17 +275,54 @@ def DoFolder(source_folder, table, dest_folder):
         
         logger.info(f"Лист '{sheet_name}': обработано {row_count} строк, найдено {copied_count}, не найдено {not_found_count}, множественные совпадения: {multiple_found_count}")
         
-        # Сохраняем отчет о не найденных файлах
+        # Сохраняем отчет о не найденных файлах для этого листа в его папке
         if not_found_count > 0:
             report_path = os.path.join(sheet_folder, "not_found_report.txt")
             try:
                 with open(report_path, 'w', encoding='utf-8') as f:
-                    f.write(f"Не найдено файлов: {not_found_count} из {row_count}\n")
+                    f.write(f"Отчет о не найденных файлах\n")
+                    f.write(f"============================\n\n")
                     f.write(f"Имя папки: {folder_name}\n")
                     f.write(f"Имя подпапки: {subfolder_name if subfolder_name else '(нет)'}\n")
                     f.write(f"Исходный лист: {sheet_name}\n")
+                    f.write(f"Не найдено файлов: {not_found_count} из {row_count}\n\n")
+                    f.write(f"Список не найденных файлов:\n")
+                    f.write(f"--------------------------\n")
+                    for item in sheet_not_found:
+                        f.write(f"• {item['name']}\n")
             except Exception as e:
                 logger.error(f"Ошибка при сохранении отчета: {e}")
+    
+    # Сохраняем общий отчет о не найденных файлах в корневой целевой папке
+    if not_found_reports:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        report_filename = f"not_found_report_{timestamp}.txt"
+        report_path = os.path.join(dest_folder_fixed, report_filename)
+        
+        try:
+            with open(report_path, 'w', encoding='utf-8') as f:
+                f.write(f"ОТЧЕТ О НЕ НАЙДЕННЫХ ФАЙЛАХ\n")
+                f.write(f"===========================\n\n")
+                f.write(f"Дата создания: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}\n")
+                f.write(f"Исходная папка: {source_folder_fixed}\n")
+                f.write(f"Excel файл: {table_fixed}\n")
+                f.write(f"Целевая папка: {dest_folder_fixed}\n")
+                f.write(f"Всего не найденных файлов: {len(not_found_reports)}\n\n")
+                f.write(f"СПИСОК НЕ НАЙДЕННЫХ ФАЙЛОВ:\n")
+                f.write(f"============================\n\n")
+                
+                for item in not_found_reports:
+                    f.write(f"Заголовок: {item['title']}\n")
+                    f.write(f"Подзаголовок: {item['subtitle']}\n")
+                    f.write(f"Название файла: {item['name']}\n")
+                    f.write(f"Лист Excel: {item['sheet']}\n")
+                    f.write(f"{'-'*50}\n")
+            
+            logger.info(f"Создан общий отчет о не найденных файлах: {report_path}")
+        except Exception as e:
+            logger.error(f"Ошибка при сохранении общего отчета: {e}")
+    else:
+        logger.info("Все файлы успешно найдены. Отчет не требуется.")
     
     logger.info("Обработка завершена!")
     
@@ -279,22 +336,22 @@ def main():
     mainFolder = r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Sorted"
         
     DoFolder(
-        r"C:\Peterhof\до войны",
-        r"C:\Peterhof\до войны\!до_войны_подписи_текст3.xlsx",
-        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Sorted\до войны"
+        r"F:\MiscProjects\Peterhoff\Peterhof\до войны",
+        r"F:\MiscProjects\Peterhoff\Peterhof\до войны\!до_войны_подписи_текст3.xlsx",
+        r"F:\MiscProjects\Peterhoff\\Sorted\до войны"
     )
     logger.debug(f"##################################################################################################################")
 
     DoFolder(
-        r"C:\Peterhof\разрушения",
-        r"C:\Peterhof\разрушения\!разрушения_подписи_текст3.xlsx",
-        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Sorted\разрушения"
+        r"F:\MiscProjects\Peterhoff\Peterhof\разрушения",
+        r"F:\MiscProjects\Peterhoff\Peterhof\разрушения\!разрушения_подписи_текст3.xlsx",
+        r"F:\MiscProjects\Peterhoff\\Sorted\разрушения"
     )
     logger.debug(f"##################################################################################################################")
     DoFolder(
-        r"C:\Peterhof\восстановление",
-        r"C:\Peterhof\восстановление\!восстановление_подписи_текст3.xlsx",
-        r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Sorted\восстановление"
+        r"F:\MiscProjects\Peterhoff\Peterhof\восстановление",
+        r"F:\MiscProjects\Peterhoff\Peterhof\восстановление\!восстановление_подписи_текст3.xlsx",
+        r"F:\MiscProjects\Peterhoff\\Sorted\восстановление"
     )
 
 

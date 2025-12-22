@@ -1,3 +1,5 @@
+githubToken = "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"
+
 function createElement(id, link)
 {
     // Возвращаем Promise для поддержки цепочки .then()
@@ -93,7 +95,7 @@ class GitHubFolderScanner {
      * @param {string} githubToken - Необязательный токен GitHub для увеличения лимита запросов
      * @returns {Promise<Array<string>>} - Массив URL всех вложенных папок
      */
-    static async scanFolder(githubUrl, githubToken = "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") {
+    static async scanFolder(githubUrl) {
         try {
             // Парсим URL GitHub
             const { repo, branch, folderPath } = this.parseGitHubUrl(githubUrl);

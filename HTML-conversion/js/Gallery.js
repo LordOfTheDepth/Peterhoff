@@ -1,10 +1,10 @@
-
+githubToken = "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"
 (function() {
     'use strict';
     
     // ФУНКЦИЯ для создания галереи с параметрами
     // Добавлен параметр githubToken (необязательный)
-    function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl, githubToken = "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") {
+    function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl) {
         try {
             // Извлекаем параметры из URL
             const urlParts = githubFolderUrl.split('/');
