@@ -15,6 +15,18 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+def get_base_dir():
+    """Возвращает базовую директорию скрипта"""
+    return os.path.dirname(os.path.abspath(__file__))
+
+def resolve_relative_path(relative_path):
+    """Преобразует относительный путь в абсолютный относительно директории скрипта"""
+    base_dir = get_base_dir()
+    # Если путь уже абсолютный, возвращаем его как есть
+    if os.path.isabs(relative_path):
+        return relative_path
+    return os.path.join(base_dir, relative_path)
+
 def normalize_filename(filename):
     """Удаляет расширения изображений и оставляет только буквы и цифры"""
     # Определяем расширения файлов изображений
@@ -82,10 +94,15 @@ def get_all_files_recursive(folder_path):
     return all_files
 
 def DoFolder(source_folder, table, dest_folder):
-    # Используем raw strings для путей в Windows
-    source_folder_fixed = source_folder
-    table_fixed = table
-    dest_folder_fixed = dest_folder
+    # Преобразуем относительные пути в абсолютные
+    source_folder_fixed = resolve_relative_path(source_folder)
+    table_fixed = resolve_relative_path(table)
+    dest_folder_fixed = resolve_relative_path(dest_folder)
+    
+    # Логируем пути для отладки
+    logger.info(f"Исходная папка: {source_folder_fixed}")
+    logger.info(f"Excel файл: {table_fixed}")
+    logger.info(f"Целевая папка: {dest_folder_fixed}")
     
     # Проверяем существование исходной папки
     if not os.path.exists(source_folder_fixed):
@@ -332,26 +349,27 @@ def DoFolder(source_folder, table, dest_folder):
     logger.info(f"Уникальных нормализованных имен: {len(normalized_map)}")
 
 def main():
-
-    mainFolder = r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Sorted"
-        
+    # Используем только относительные пути
+    # Все пути будут автоматически преобразованы в абсолютные
+    # относительно директории скрипта
+    
     DoFolder(
-        r"F:\MiscProjects\Peterhoff\Peterhof\до войны",
-        r"F:\MiscProjects\Peterhoff\Peterhof\до войны\!до_войны_подписи_текст3.xlsx",
-        r"F:\MiscProjects\Peterhoff\\Sorted\до войны"
+        r"Peterhof\до войны",
+        r"Peterhof\до войны\!до_войны_подписи_текст4.xlsx",
+        r"Sorted\до войны"
     )
     logger.debug(f"##################################################################################################################")
 
     DoFolder(
-        r"F:\MiscProjects\Peterhoff\Peterhof\разрушения",
-        r"F:\MiscProjects\Peterhoff\Peterhof\разрушения\!разрушения_подписи_текст3.xlsx",
-        r"F:\MiscProjects\Peterhoff\\Sorted\разрушения"
+        r"Peterhof\разрушения",
+        r"Peterhof\разрушения\!разрушения_подписи_текст4.xlsx",
+        r"Sorted\разрушения"
     )
     logger.debug(f"##################################################################################################################")
     DoFolder(
-        r"F:\MiscProjects\Peterhoff\Peterhof\восстановление",
-        r"F:\MiscProjects\Peterhoff\Peterhof\восстановление\!восстановление_подписи_текст3.xlsx",
-        r"F:\MiscProjects\Peterhoff\\Sorted\восстановление"
+        r"Peterhof\восстановление",
+        r"Peterhof\восстановление\!восстановление_подписи_текст4.xlsx",
+        r"Sorted\восстановление"
     )
 
 

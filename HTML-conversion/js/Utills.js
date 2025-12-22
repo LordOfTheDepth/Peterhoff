@@ -1,4 +1,4 @@
-githubToken = "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"
+githubToken = "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"
 
 function createElement(id, link)
 {
