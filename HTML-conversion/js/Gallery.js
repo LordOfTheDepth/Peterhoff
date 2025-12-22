@@ -1,10 +1,10 @@
-githubToken = "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"
 (function() {
     'use strict';
     
     // ФУНКЦИЯ для создания галереи с параметрами
     // Добавлен параметр githubToken (необязательный)
     function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl) {
+        githubToken = "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"
         try {
             // Извлекаем параметры из URL
             const urlParts = githubFolderUrl.split('/');
@@ -271,11 +271,15 @@ githubToken = "github_pat_11ASO6L4Y0GOXoRWTTjwYC_ypZPayAp5cpnsdj4swtbtrZtVH7NHuF
                             const description = entry.description || '';
                             const truncatedDescription = entry.truncatedDescription || '';
                             
+                            // Создаем data-атрибуты для описания
+
+                            const dataTitleAttr = displayTitle ? `data-caption="${escapeHtmlAttribute(displayTitle) + " |\n" + escapeHtmlAttribute(description)}"` : '';
+                            
                             return `
                                 <a href="${entry.directUrl}" 
                                    class="media-item"
                                    data-fancybox="${GALLERY_ID}"
-                                  >
+                                   ${dataTitleAttr}>
                                   
                                   <div class="media-image-container">
                                     <img src="${entry.thumbnailUrl}" 
@@ -283,7 +287,7 @@ githubToken = "github_pat_11ASO6L4Y0GOXoRWTTjwYC_ypZPayAp5cpnsdj4swtbtrZtVH7NHuF
                                          class="media-image"
                                          loading="lazy">
                                   </div>
-                                  
+                               
                                   <div class="media-caption">
                                     <div class="media-title">${escapeHtml(displayTitle)}</div>
                                     ${truncatedDescription ? `<div class="media-description" title="${escapeHtml(description)}">${escapeHtml(truncatedDescription)}</div>` : ''}
@@ -306,7 +310,7 @@ githubToken = "github_pat_11ASO6L4Y0GOXoRWTTjwYC_ypZPayAp5cpnsdj4swtbtrZtVH7NHuF
                 return div.innerHTML;
             }
             
-            // Инициализация Fancybox
+            // Инициализация Fancybox с кастомными настройками для отображения описания
             function initFancyboxGallery() {
                 if (typeof Fancybox === 'undefined') {
                     console.warn('Fancybox не загружен');
@@ -317,7 +321,67 @@ githubToken = "github_pat_11ASO6L4Y0GOXoRWTTjwYC_ypZPayAp5cpnsdj4swtbtrZtVH7NHuF
                 
                 if (galleryItems.length > 0) {
                     Fancybox.bind(galleryItems, {
-                        Thumbs: { autoStart: false }
+                        Thumbs: { autoStart: false },
+                        // Кастомизируем отображение
+                        on: {
+                            'Carousel.ready': (fancybox, carousel) => {
+                                // Создаем контейнер для описания
+                                const descriptionContainer = document.createElement('div');
+                                descriptionContainer.className = 'fancybox-description';
+                                descriptionContainer.style.cssText = `
+                                    position: absolute;
+                                    bottom: 0;
+                                    left: 0;
+                                    right: 0;
+                                    background: rgba(0, 0, 0, 0.7);
+                                    color: white;
+                                    padding: 15px;
+                                    font-size: 14px;
+                                    line-height: 1.5;
+                                    z-index: 99999;
+                                    transition: opacity 0.3s;
+                                `;
+                                
+                                // Добавляем контейнер в DOM
+                                document.querySelector('.fancybox__container').appendChild(descriptionContainer);
+                                
+                                // Функция для обновления описания
+                                const updateDescription = () => {
+                                    const slide = carousel.slides[carousel.page];
+                                    const triggerEl = slide.triggerEl;
+                                    
+                                    if (triggerEl) {
+                                        const description = triggerEl.getAttribute('data-description');
+                                        const caption = triggerEl.getAttribute('data-caption') || '';
+                                        
+                                        if (description) {
+                                            descriptionContainer.innerHTML = `
+                                                ${caption ? `<div style="font-weight: bold; margin-bottom: 5px;">${caption}</div>` : ''}
+                                                <div>${description}</div>
+                                            `;
+                                            descriptionContainer.style.display = 'block';
+                                        } else {
+                                            descriptionContainer.style.display = 'none';
+                                        }
+                                    }
+                                };
+                                
+                                // Обновляем описание при смене слайда
+                                carousel.on('change.carousel', updateDescription);
+                                
+                                // Инициализируем описание для первого слайда
+                                updateDescription();
+                                
+                                // Сохраняем ссылку на контейнер для очистки
+                                fancybox.descriptionContainer = descriptionContainer;
+                            },
+                            'close': (fancybox) => {
+                                // Удаляем контейнер описания при закрытии
+                                if (fancybox.descriptionContainer) {
+                                    fancybox.descriptionContainer.remove();
+                                }
+                            }
+                        }
                     });
                 }
             }
