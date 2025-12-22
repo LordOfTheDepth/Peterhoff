@@ -1,4 +1,3 @@
-githubToken = "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"
 
 function createElement(id, link)
 {
@@ -95,6 +94,9 @@ class GitHubFolderScanner {
      * @param {string} githubToken - Необязательный токен GitHub для увеличения лимита запросов
      * @returns {Promise<Array<string>>} - Массив URL всех вложенных папок
      */
+
+    githubToken = "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"
+
     static async scanFolder(githubUrl) {
         try {
             // Парсим URL GitHub
