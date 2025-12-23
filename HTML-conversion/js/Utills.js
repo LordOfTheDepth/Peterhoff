@@ -95,9 +95,10 @@ class GitHubFolderScanner {
      * @returns {Promise<Array<string>>} - Массив URL всех вложенных папок
      */
 
-    githubToken = "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"
+    
 
     static async scanFolder(githubUrl) {
+        let githubToken = "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"
         try {
             // Парсим URL GitHub
             const { repo, branch, folderPath } = this.parseGitHubUrl(githubUrl);

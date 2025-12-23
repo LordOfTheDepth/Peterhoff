@@ -6,6 +6,13 @@
 @import url(PeterhoffText.css);
 @import url(Gallery.css);
 
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+
+
 :root {
     --primary-color: #4361ee;
     --secondary-color: #3f37c9;
@@ -29,17 +36,24 @@
 
 }
 
+
 .root-container
 {
-    align-items: "center";
+    margin-right: auto;
+    margin-left: auto;
+    align-items: center;
 }
 .root-container .container
-{
-    align-self: "center";
+{    
+    margin-right: auto;
+    margin-left: auto;
+    align-self: center;
 }
 .container
 {
     max-width: 1600px;
+        margin-right: auto;
+    margin-left: auto;
     align-self: center;
 }
 .portlet

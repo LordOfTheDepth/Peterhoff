@@ -47,11 +47,11 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+  font-size: 28px;
   background-color: var(--lightBKG);
   text-decoration: none;
   font-weight: 300;
   font-family: var(--font-heading);
-  font-size: 30px;
   color: var(--dark-color);
   border-radius: 0;
   transition: background-color 0.2s;
@@ -68,7 +68,7 @@
 /* Убираем отступы для адаптивности */
 @media (max-width: 1024px) {
   .three-buttons-row .button a {
-    font-size: 32px;
+    font-size: 28px;
     padding: 8px;
   }
 }
