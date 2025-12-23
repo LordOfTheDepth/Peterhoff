@@ -93,7 +93,7 @@ class GitHubFolderScanner {
         let token1 = "pat_"
         let token2 = "11ASO6L4Y0ohnzEd8NtYHe_XQuxbUyEXroUsSzZ8r9AA"
         let token3 = "LcjLiu5IUX260bb5bUjSQHCNC2EXYJ0vWDcm1m"
-        let githubToken = null;//"github_" + token1 + token2 + token3;
+        let githubToken = "github_" + token1 + token2 + token3;
         try {
             // Парсим URL GitHub
             const { repo, branch, folderPath } = this.parseGitHubUrl(githubUrl);
