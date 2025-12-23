@@ -356,7 +356,7 @@ def main():
     DoFolder(
         r"Unsorted\Peterhof\до войны",
         r"Unsorted\Peterhof\до войны\!до_войны_подписи_текст4.xlsx",
-        r"Sorted\до войны"
+        r"Sorted\Peterhof\до войны"
     )
     logger.debug(f"##################################################################################################################")
 
@@ -376,39 +376,39 @@ def main():
 #Pushkin
     DoFolder(
         r"Unsorted\Pushkin\до войны",
-        r"Unsorted\Pushkin\до войны\!до_войны_подписи_текст4.xlsx",
+        r"Unsorted\Pushkin\до войны\до войны_подписи_пушкин.xlsx",
         r"Sorted\Pushkin\до войны"
     )
     logger.debug(f"##################################################################################################################")
 
     DoFolder(
         r"Unsorted\Pushkin\разрушения",
-        r"Unsorted\Pushkin\разрушения\!разрушения_подписи_текст4.xlsx",
+        r"Unsorted\Pushkin\разрушения\разрушения_подписи_пушкин.xlsx",
         r"Sorted\Pushkin\разрушения"
     )
     logger.debug(f"##################################################################################################################")
     DoFolder(
         r"Unsorted\Pushkin\восстановление",
-        r"Unsorted\Pushkin\восстановление\!восстановление_подписи_текст4.xlsx",
+        r"Unsorted\Pushkin\восстановление\восстановление_подписи_пушкин.xlsx",
         r"Sorted\Pushkin\восстановление"
     )
 #Pavlovsk
     DoFolder(
         r"Unsorted\Pavlovsk\до войны",
-        r"Unsorted\Pavlovsk\до войны\!до_войны_подписи_текст4.xlsx",
+        r"Unsorted\Pavlovsk\до войны\до войны_павловск_подписи.xlsx",
         r"Sorted\Pavlovsk\до войны"
     )
     logger.debug(f"##################################################################################################################")
 
     DoFolder(
         r"Unsorted\Pavlovsk\разрушения",
-        r"Unsorted\Pavlovsk\разрушения\!разрушения_подписи_текст4.xlsx",
+        r"Unsorted\Pavlovsk\разрушения\разрушение_павловск_подписи.xlsx",
         r"Sorted\Pavlovsk\разрушения"
     )
     logger.debug(f"##################################################################################################################")
     DoFolder(
         r"Unsorted\Pavlovsk\восстановление",
-        r"Unsorted\Pavlovsk\восстановление\!восстановление_подписи_текст4.xlsx",
+        r"Unsorted\Pavlovsk\восстановление\восстановление_павловск_подписи.xlsx",
         r"Sorted\Pavlovsk\восстановление"
     )
 
