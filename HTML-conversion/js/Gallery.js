@@ -221,7 +221,7 @@
                         }
                         
                         // Создаем усеченную версию для миниатюры
-                        const truncatedDescription = truncateText(description, 100);
+                        const truncatedDescription = description; //truncateText(description, 100);
                         
                         return {
                             title: item.name,
