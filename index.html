@@ -3,15 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peterhoff Project</title>
-    
-    <!-- 🔗 ОСНОВНАЯ ЦЕЛЬ: загружаем ваш CSS через GitHub Pages -->
-    <!-- Замените 'lordofthedepth' на ваш реальный ник, если он другой -->
-    <link rel="stylesheet" href="https://lordofthedepth.github.io/Peterhoff/css/MainStyle.css">
-    
-    <!-- 💡 Альтернативные ссылки на случай, если Pages еще не обновился -->
-    <!-- <link rel="stylesheet" href="css/MainStyle.css"> -->
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/LordOfTheDepth/Peterhoff@NewGallery/HTML-conversion/css/MainStyle.css"> -->
 </head>
 <body>
     <header>
@@ -19,51 +10,5 @@
         <p>Это тестовая страница для проверки загрузки стилей с GitHub Pages.</p>
     </header>
 
-    <main>
-        <!-- 🎯 Контейнер для проверки работы CSS -->
-        <div class="test-container">
-            <h2>Проверка стилей:</h2>
-            
-            <!-- Элементы, которые часто стилизуют в CSS -->
-            <button class="test-button">Тестовая кнопка</button>
-            
-            <div class="test-box">
-                <p>Это тестовый блок. Если фон и текст здесь выглядят иначе, чем стандартные, значит CSS загрузился.</p>
-            </div>
-            
-            <ul class="test-list">
-                <li>Пункт списка 1</li>
-                <li>Пункт списка 2</li>
-                <li>Пункт списка 3</li>
-            </ul>
-        </div>
-
-        <!-- 📍 Информация о загрузке CSS -->
-        <div class="info">
-            <h3>Для проверки:</h3>
-            <p>Откройте <strong>Инструменты разработчика</strong> (F12) → вкладка <strong>"Сеть" (Network)</strong>. Обновите страницу и найдите запрос к <code>MainStyle.css</code>. Статус должен быть 200 (OK).</p>
-            <p>Путь к CSS: <code id="css-path">Загрузка...</code></p>
-        </div>
-    </main>
-
-    <footer>
-        <p>Страница сгенерирована для репозитория <a href="https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery">Peterhoff</a>.</p>
-    </footer>
-
-    <script>
-        // 📝 Маленький скрипт для отображения загруженного пути CSS
-        document.addEventListener('DOMContentLoaded', function() {
-            const links = document.getElementsByTagName('link');
-            for(let link of links) {
-                if(link.rel === 'stylesheet') {
-                    document.getElementById('css-path').textContent = link.href;
-                    break;
-                }
-            }
-
-            // 🛠️ Простая проверка для консоли
-            console.log('Тестовая страница загружена. Проверьте вкладку "Сеть", что файл MainStyle.css загружен.');
-        });
-    </script>
 </body>
 </html>
