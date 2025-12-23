@@ -1,10 +1,10 @@
 
-@import url(MainButtons.css);
-@import url(Footer.css);
-@import url(MainHeader.css);
-@import url(PagesHeader.css);
-@import url(PeterhoffText.css);
-@import url(Gallery.css);
+@import url(https://cdn.jsdelivr.net/gh/LordOfTheDepth/Peterhoff@main/HTML-conversion/css/MainButtons.css);
+@import url(https://cdn.jsdelivr.net/gh/LordOfTheDepth/Peterhoff@main/HTML-conversion/css/Footer.css);
+@import url(https://cdn.jsdelivr.net/gh/LordOfTheDepth/Peterhoff@main/HTML-conversion/css/MainHeader.css);
+@import url(https://cdn.jsdelivr.net/gh/LordOfTheDepth/Peterhoff@main/HTML-conversion/css/PagesHeader.css);
+@import url(https://cdn.jsdelivr.net/gh/LordOfTheDepth/Peterhoff@main/HTML-conversion/css/PeterhoffText.css);
+@import url(https://cdn.jsdelivr.net/gh/LordOfTheDepth/Peterhoff@main/HTML-conversion/css/Gallery.css);
 
 /* http://meyerweb.com/eric/tools/css/reset/ 
    v2.0 | 20110126
@@ -14,6 +14,7 @@
 
 
 :root {
+
     --primary-color: #4361ee;
     --secondary-color: #3f37c9;
     --accent-color: #4cc9f0;
