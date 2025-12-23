@@ -1,8 +1,8 @@
 .three-buttons-row {
   display: flex;
   width: 100%;
-  margin-top: 15;
-  margin-bottom: 15;
+  margin-top: 15px !important;
+  margin-bottom: 15px !important;
   padding: 0;
   gap: 20px; /* Расстояние между контейнерами */
 }
