@@ -3,67 +3,45 @@
     
     
     // ФУНКЦИЯ для создания галереи с параметрами
-    // Добавлен параметр githubToken (необязательный)
-    function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl) {
-        let token1 = "pat_"
-        let token2 = "11ASO6L4Y0ohnzEd8NtYHe_XQuxbUyEXroUsSzZ8r9AA"
-        let token3 = "LcjLiu5IUX260bb5bUjSQHCNC2EXYJ0vWDcm1m"
-        let githubToken = "github_" + token1 + token2 + token3;
+    function createGallery(GALLERY_ID, title, subtitle, pagesFolderUrl) {
         try {
-            // Извлекаем параметры из URL
-            const urlParts = githubFolderUrl.split('/');
+            // Парсим URL GitHub Pages
+            const url = new URL(pagesFolderUrl);
             
-            if (urlParts[2] !== 'github.com') {
-                throw new Error('Неверный GitHub URL');
+            // Проверяем, что это GitHub Pages URL
+            if (!url.hostname.includes('github.io')) {
+                throw new Error('Неверный GitHub Pages URL. Ожидается URL вида https://username.github.io/repo/');
             }
             
-            const GITHUB_REPO = `${urlParts[3]}/${urlParts[4]}`;
+            // Извлекаем путь из URL
+            const pathParts = url.pathname.split('/').filter(part => part.length > 0);
             
-            // Определяем ветку/коммит
-            let GITHUB_BRANCH = 'main';
-            let GITHUB_FOLDER = '';
+            // Базовый URL и путь к папке
+            const PAGES_BASE_URL = `https://${url.hostname}`;
+            let PAGES_FOLDER = '';
             
-            // Находим индекс "tree" в URL
-            const treeIndex = urlParts.findIndex(part => part === 'tree');
-            
-            if (treeIndex !== -1 && urlParts[treeIndex + 1]) {
-                GITHUB_BRANCH = urlParts[treeIndex + 1];
+            if (pathParts.length > 0) {
+                // Проверяем, является ли последняя часть файлом (имеет расширение)
+                const lastPart = pathParts[pathParts.length - 1];
+                const hasExtension = lastPart.includes('.') && !lastPart.endsWith('/');
                 
-                // Формируем путь к папке (все что после ветки)
-                if (urlParts.length > treeIndex + 2) {
-                    GITHUB_FOLDER = urlParts.slice(treeIndex + 2).join('/');
+                if (hasExtension) {
+                    // Это файл, папка - все кроме последней части
+                    PAGES_FOLDER = pathParts.slice(0, -1).join('/');
+                } else {
+                    // Это папка
+                    PAGES_FOLDER = pathParts.join('/');
                 }
             }
             
-            // Декодируем папку из URL-encoded формата
-            GITHUB_FOLDER = decodeURIComponent(GITHUB_FOLDER);
             function escapeHtmlAttribute(url) {
-            if (!url) return '';
-            return String(url)
-                .replace(/&/g, '&amp;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-            }
-            // Функция для правильного декодирования base64 с учетом UTF-8
-            function decodeBase64UTF8(base64) {
-                try {
-                    // Преобразуем base64 в бинарные данные
-                    const binaryString = atob(base64);
-                    
-                    // Преобразуем бинарную строку в массив байт
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    
-                    // Декодируем как UTF-8
-                    return new TextDecoder('utf-8').decode(bytes);
-                } catch (error) {
-                    console.error('Ошибка декодирования base64:', error);
-                    return '';
-                }
+                if (!url) return '';
+                return String(url)
+                    .replace(/&/g, '&amp;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
             }
             
             // Функция для усечения текста с добавлением "..."
@@ -75,41 +53,66 @@
                 return text.substring(0, maxLength) + ' ...';
             }
             
-            // Функция для выполнения авторизованных запросов к GitHub API
-            async function fetchGitHubAPI(url) {
-                const headers = {};
-                
-                // Добавляем токен авторизации, если он предоставлен
-                if (githubToken) {
-                    headers['Authorization'] = `token ${githubToken}`;
-                }
-                
+            // Функция для загрузки содержимого папки GitHub Pages
+            async function fetchPagesContent(url) {
                 try {
-                    const response = await fetch(url, { headers });
+                    const response = await fetch(url);
                     
-                    // Проверяем статус ответа
                     if (!response.ok) {
-                        if (response.status === 403) {
-                            // Превышен лимит запросов
-                            const rateLimitReset = response.headers.get('X-RateLimit-Reset');
-                            const resetTime = rateLimitReset ? new Date(rateLimitReset * 1000).toLocaleTimeString() : 'неизвестно';
-                            console.warn(`Превышен лимит запросов GitHub API. Восстановление в: ${resetTime}`);
-                        }
-                        throw new Error(`GitHub API: ${response.status} ${response.statusText}`);
+                        throw new Error(`GitHub Pages: ${response.status} ${response.statusText}`);
                     }
                     
-                    return response;
+                    return await response.text();
                 } catch (error) {
-                    console.error('Ошибка при запросе к GitHub API:', error);
+                    console.error('Ошибка при запросе к GitHub Pages:', error);
                     throw error;
                 }
+            }
+            
+            // Функция для парсинга HTML листинга директории
+            function parseDirectoryListing(htmlContent, baseUrl) {
+                const contents = [];
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlContent, 'text/html');
+                
+                // GitHub Pages генерирует простой список файлов
+                // Ищем все ссылки, которые ведут на файлы и папки
+                const links = doc.querySelectorAll('a');
+                
+                links.forEach(link => {
+                    const href = link.getAttribute('href');
+                    const text = link.textContent.trim();
+                    
+                    // Пропускаем ссылки на текущую директорию и родительскую
+                    if (href === './' || href === '../' || href === '/' || !href) {
+                        return;
+                    }
+                    
+                    // Определяем тип: папка или файл
+                    const isDirectory = href.endsWith('/');
+                    const name = isDirectory ? text.replace('/', '') : text;
+                    
+                    // Пропускаем скрытые файлы
+                    if (name.startsWith('.')) {
+                        return;
+                    }
+                    
+                    // Создаем полный URL для файла
+                    const fileUrl = href.startsWith('http') ? href : new URL(href, baseUrl).href;
+                    
+                    contents.push({
+                        name: name,
+                        type: isDirectory ? 'dir' : 'file',
+                        url: fileUrl
+                    });
+                });
+                
+                return contents;
             }
             
             // Функция для загрузки JSON файла с описаниями
             async function loadDescriptionsJSON() {
                 try {
-                    const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
-                    
                     // Пробуем разные имена файлов
                     const possibleNames = [
                         'descriptions.json',
@@ -120,21 +123,16 @@
                     
                     for (const fileName of possibleNames) {
                         try {
-                            const jsonUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}/${fileName}?ref=${GITHUB_BRANCH}`;
+                            const jsonUrl = `${PAGES_BASE_URL}/${PAGES_FOLDER ? PAGES_FOLDER + '/' : ''}${fileName}`;
                             
                             console.log(`Пытаюсь загрузить: ${jsonUrl}`);
                             
-                            const response = await fetchGitHubAPI(jsonUrl);
+                            const response = await fetch(jsonUrl);
                             
                             if (response.ok) {
-                                const fileData = await response.json();
-                                if (fileData.content) {
-                                    // Правильно декодируем base64 с UTF-8
-                                    const content = decodeBase64UTF8(fileData.content);
-                                    const jsonData = JSON.parse(content);
-                                    console.log('✅ JSON файл загружен:', jsonData);
-                                    return jsonData;
-                                }
+                                const jsonData = await response.json();
+                                console.log('✅ JSON файл загружен:', jsonData);
+                                return jsonData;
                             }
                         } catch (e) {
                             console.log(`Файл ${fileName} не найден или ошибка:`, e.message);
@@ -150,20 +148,21 @@
                 }
             }
             
-            // Основная функция загрузки данных с GitHub
-            async function loadFromGitHub() {
+            // Основная функция загрузки данных с GitHub Pages
+            async function loadFromGitHubPages() {
                 try {
-                    console.log('🔄 Загрузка списка файлов с GitHub...');
+                    console.log('🔄 Загрузка списка файлов с GitHub Pages...');
                     
-                    const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
+                    // Создаем URL для загрузки содержимого папки
+                    const folderUrl = `${PAGES_BASE_URL}/${PAGES_FOLDER ? PAGES_FOLDER + '/' : ''}`;
                     
                     // Загружаем описания И список файлов параллельно
-                    const [descriptionsData, filesResponse] = await Promise.all([
+                    const [descriptionsData, htmlContent] = await Promise.all([
                         loadDescriptionsJSON(),
-                        fetchGitHubAPI(`https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}?ref=${GITHUB_BRANCH}`)
+                        fetchPagesContent(folderUrl)
                     ]);
                     
-                    const filesData = await filesResponse.json();
+                    const filesData = parseDirectoryListing(htmlContent, folderUrl);
                     
                     // Фильтруем только PNG и JPG файлы
                     const imageFiles = filesData.filter(item => {
@@ -226,18 +225,18 @@
                         return {
                             title: item.name,
                             displayTitle: displayTitle,
-                            directUrl: item.download_url,
-                            thumbnailUrl: item.download_url,
+                            directUrl: item.url,
+                            thumbnailUrl: item.url,
                             description: description,
                             truncatedDescription: truncatedDescription,
-                            uuid: item.sha
+                            uuid: item.name // Используем имя файла как идентификатор
                         };
                     });
                     
                     return imagesInfo;
                     
                 } catch (error) {
-                    console.error('❌ Ошибка при загрузке данных с GitHub:', error);
+                    console.error('❌ Ошибка при загрузке данных с GitHub Pages:', error);
                     return [];
                 }
             }
@@ -276,7 +275,6 @@
                             const truncatedDescription = entry.truncatedDescription || '';
                             
                             // Создаем data-атрибуты для описания
-
                             const dataTitleAttr = displayTitle ? `data-caption="${escapeHtmlAttribute(displayTitle) + " |\n" + escapeHtmlAttribute(description)}"` : '';
                             
                             return `
@@ -393,7 +391,7 @@
             // Основная функция инициализации
             async function initGallery() {
                 try {
-                    const entries = await loadFromGitHub();
+                    const entries = await loadFromGitHubPages();
                     createGalleryHTML(entries);
                 } catch (error) {
                     const container = document.getElementById(GALLERY_ID);
@@ -415,7 +413,7 @@
             }
             
         } catch (error) {
-            console.error('❌ Ошибка при парсинге GitHub URL:', error);
+            console.error('❌ Ошибка при парсинге GitHub Pages URL:', error);
         }
     }
     
