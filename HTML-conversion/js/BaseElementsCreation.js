@@ -6,9 +6,7 @@ function createBaseElements(headerTitle, headerImageUrl)
   
   createElement("header","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/PeterhofHeader.html").then(() => {insertHtml("page-title",headerTitle)}).then(() => 
 {
-    insertHtml("page-title-img", "<img src = headerImageUrl> </img>"
-
-    )
+    insertHtml("page-title-img", `<img src = ${headerImageUrl}> </img>`)
 });
   createElement("buttons","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/PeterhofButtons.html?refresh=1")
 
