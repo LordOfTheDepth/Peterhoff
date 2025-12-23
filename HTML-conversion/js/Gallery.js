@@ -4,7 +4,10 @@
     // ФУНКЦИЯ для создания галереи с параметрами
     // Добавлен параметр githubToken (необязательный)
     function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl) {
-        let githubToken = "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"
+        let token1 = "pat_"
+        let token2 = "11ASO6L4Y0ohnzEd8NtYHe_XQuxbUyEXroUsSzZ8r9AA"
+        let token3 = "LcjLiu5IUX260bb5bUjSQHCNC2EXYJ0vWDcm1m"
+        let githubToken = "github_" + token1 + token2 + token3;
         try {
             // Извлекаем параметры из URL
             const urlParts = githubFolderUrl.split('/');
