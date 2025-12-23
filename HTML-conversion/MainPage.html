@@ -1,14 +1,6 @@
-<link rel="stylesheet" href="css/MainStyle.css">
-<div id="page-background" style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(white 0%, var(--main-bkg-color) 50% , var(--main-bkg-color) 100%);
-    z-index: -1000;
-    pointer-events: none;
-"></div>
+<link rel="stylesheet" href="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/css/MainStyle.css">
+<script src="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/js/Utills.js"></script>
+
 <div class="root-container">
 <div class="container">
     <header class="main-header-container">
@@ -27,7 +19,7 @@
     </h1>
     </header>
 
-
+    <div id="background"></div>
 
     <div class="three-buttons-row">
         <div class="button-container">
@@ -55,21 +47,16 @@
             </div>
         </div>
     </div>
-    <link rel="import" href="Footer.html">
 
+    <div id="footer-container"></div>
+    
+    </div>
+    </div>
 
-    <div class="site-footer">
-    <a href="#top" class="back-to-top-button hover-lift">↑</a>
-    <div class="footer-content">
-        <div class="footer-logo">
-        <img src="https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/%D0%90%D1%80%D1%85%D0%B8%D0%B2%D0%BD%D1%8B%D0%B9%20%D0%BA%D0%BE%D0%BC%D0%B8%D1%82%D0%B5%D1%82%20%D0%BB%D0%BE%D0%B3%D0%BE%20(1).png?raw=true">
-        </div>
-        
-        <div class="footer-caption">
-        <strong>АРХИВЫ САНКТ-ПЕТЕРБУРГА</strong><br>
-        © 2025 · 
-        </div>
-    </div>
-    </div>
-    </div>
-    </div>
+    <script>
+
+  createElement("background","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Background.html")
+  
+  createElement("footer-container","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Footer.html?refresh=1")
+
+</script>
