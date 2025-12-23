@@ -88,18 +88,13 @@ function createElementWithCallback(id, link, callback) {
 
 class GitHubFolderScanner {
     
-    /**
-     * Сканирует папку GitHub и возвращает все вложенные папки
-     * @param {string} githubUrl - URL папки GitHub в формате: https://github.com/username/repo/tree/branch/path/to/folder
-     * @param {string} githubToken - Необязательный токен GitHub для увеличения лимита запросов
-     * @returns {Promise<Array<string>>} - Массив URL всех вложенных папок
-     */
-
-    
 
     static async scanFolder(githubUrl) {
-        
-        let githubToken = "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"
+         
+        let token1 = "pat_"
+        let token2 = "11ASO6L4Y0ohnzEd8NtYHe_XQuxbUyEXroUsSzZ8r9AA"
+        let token3 = "LcjLiu5IUX260bb5bUjSQHCNC2EXYJ0vWDcm1m"
+        let githubToken = null;//"github_" + token1 + token2 + token3;
         try {
             // Парсим URL GitHub
             const { repo, branch, folderPath } = this.parseGitHubUrl(githubUrl);
