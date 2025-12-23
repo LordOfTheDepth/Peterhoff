@@ -1,6 +1,7 @@
 (function() {
     'use strict';
     
+    
     // ФУНКЦИЯ для создания галереи с параметрами
     // Добавлен параметр githubToken (необязательный)
     function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl) {
