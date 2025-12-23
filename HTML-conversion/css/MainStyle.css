@@ -93,7 +93,7 @@
 .pavlovsk *
 {
     --darkBKG: #4f463a;
-    --lightBKG: #e29c62;
+    --lightBKG: #e49f66;
     --brightBKG: #e99862;
     --dullBKG: #96786a;
     --gradient-bkg: linear-gradient(rgb(221, 217, 212) 0%, #b2c9bf 20%, #b2c9bf 80%, rgb(226, 223, 216) 100%);
@@ -101,8 +101,8 @@
 .pushkin *
 {
     --darkBKG: #3a3e4f;
-    --lightBKG: #99b1b1;
-    --brightBKG: #62c3e9;
+    --lightBKG: #c6e4e4;
+    --brightBKG: #7dc0db;
     --dullBKG: #6a8696;
     --gradient-bkg: linear-gradient(rgb(221, 217, 212) 0%, #bcb2c9 20%, #bcb2c9 80%, rgb(226, 223, 216) 100%);
 }

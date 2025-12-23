@@ -192,7 +192,12 @@ def DoFolder(source_folder, table, dest_folder):
         # Создаем словарь для описаний
         # Сохраняем старую структуру, но добавляем title и subtitle как первые ключи
         descriptions = {}
-        descriptions["__title__"] = folder_name
+        title = folder_name
+        if(folder_name == "Неизвестная папка"):
+            title = ""
+        
+
+        descriptions["__title__"] = title 
         descriptions["__subtitle__"] = subfolder_name if subfolder_name else ""
 
         # Собираем статистику

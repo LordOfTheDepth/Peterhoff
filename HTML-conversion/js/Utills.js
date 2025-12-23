@@ -104,10 +104,8 @@ class GitHubFolderScanner {
             const allFolders = [];
             const foldersInfo = await this.scanRecursive(repo, branch, folderPath, githubToken);
             
-            // Добавляем папки в правильном порядке: сначала папки первого уровня, затем их подпапки
+            // Добавляем папки в правильном порядке, учитывая новые правила
             this.collectFoldersInOrder(foldersInfo, allFolders);
-            
-            
             
             console.log(`✅ Найдено ${allFolders.length} папок с изображениями`);
             return allFolders;
@@ -148,7 +146,7 @@ class GitHubFolderScanner {
                     path: fullFolderPath,
                     url: this.buildGitHubUrl(repo, branch, fullFolderPath),
                     info: subfolderInfo,
-                    hasImagesInSubfolder: subfolderInfo.hasImagesInCurrentFolder
+                    hasImagesInSubfolder: subfolderInfo.hasImagesInCurrentFolder || subfolderInfo.hasImagesInSubfolders
                 });
                 
                 if (subfolderInfo.hasImagesInCurrentFolder || subfolderInfo.hasImagesInSubfolders) {
@@ -181,10 +179,12 @@ class GitHubFolderScanner {
     
     /**
      * Собирает папки в правильном порядке: сначала папки первого уровня, потом их подпапки
+     * Новые правила:
+     * 1. Папка добавляется в результат только если в ней есть изображения
+     * 2. ИЛИ если в ее подпапках есть изображения (даже если в самой папке нет)
      */
     static collectFoldersInOrder(folderInfo, resultArray, currentPath = null) {
-        // Если это папка с изображениями (или ее подпапки содержат изображения),
-        // добавляем ее в результат
+        // Если текущая папка содержит изображения ИЛИ ее подпапки содержат изображения
         if (currentPath && 
             (folderInfo.hasImagesInCurrentFolder || folderInfo.hasImagesInSubfolders)) {
             resultArray.push(currentPath);
@@ -192,6 +192,8 @@ class GitHubFolderScanner {
         
         // Рекурсивно обрабатываем все подпапки
         folderInfo.subfolders.forEach(subfolder => {
+            // Добавляем подпапку только если она содержит изображения
+            // ИЛИ если в ее подпапках есть изображения
             if (subfolder.hasImagesInSubfolder) {
                 this.collectFoldersInOrder(subfolder.info, resultArray, subfolder.url);
             }
@@ -354,7 +356,6 @@ class GitHubFolderScanner {
         return decodeURIComponent(lastPart);
     }
 }
-
 /**
  * Утилиты для удобного использования
  */
