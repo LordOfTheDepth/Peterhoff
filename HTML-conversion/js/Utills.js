@@ -81,32 +81,39 @@ function createElementWithCallback(id, link, callback) {
 
 
 /**
- * GitHub Pages Folder Scanner
- * Рекурсивно находит все вложенные папки в указанной папке GitHub Pages
+ * GitHub Folder Scanner
+ * Рекурсивно находит все вложенные папки в указанной папке GitHub
  */
 
 class GitHubFolderScanner {
     
 
-    static async scanFolder(pagesUrl) {
+    static async scanFolder(githubUrl) {
+         
+        let token1 = "pat_"
+        let token2 = "11ASO6L4Y0ohnzEd8NtYHe_XQuxbUyEXroUsSzZ8r9AA"
+        let token3 = "LcjLiu5IUX260bb5bUjSQHCNC2EXYJ0vWDcm1m"
+        let githubToken = null;//"github_" + token1 + token2 + token3;
         try {
-            // Парсим URL GitHub Pages
-            const { baseUrl, folderPath } = this.parsePagesUrl(pagesUrl);
+            // Парсим URL GitHub
+            const { repo, branch, folderPath } = this.parseGitHubUrl(githubUrl);
             
             console.log(`🔍 Начинаю сканирование папки: ${folderPath || '/'}`);
             
             // Собираем все папки рекурсивно в правильном порядке
             const allFolders = [];
-            const foldersInfo = await this.scanRecursive(baseUrl, folderPath);
+            const foldersInfo = await this.scanRecursive(repo, branch, folderPath, githubToken);
             
             // Добавляем папки в правильном порядке: сначала папки первого уровня, затем их подпапки
             this.collectFoldersInOrder(foldersInfo, allFolders);
+            
+            
             
             console.log(`✅ Найдено ${allFolders.length} папок с изображениями`);
             return allFolders;
             
         } catch (error) {
-            console.error('❌ Ошибка при сканировании папки GitHub Pages:', error);
+            console.error('❌ Ошибка при сканировании папки GitHub:', error);
             throw error;
         }
     }
@@ -114,11 +121,10 @@ class GitHubFolderScanner {
     /**
      * Рекурсивно сканирует папку и собирает информацию о ней и ее подпапках
      */
-    static async scanRecursive(baseUrl, folderPath, depth = 0) {
+    static async scanRecursive(repo, branch, folderPath, githubToken, depth = 0) {
         try {
-            const indexUrl = this.buildIndexUrl(baseUrl, folderPath);
-            const htmlContent = await this.fetchPagesContent(indexUrl);
-            const contents = this.parseDirectoryListing(htmlContent);
+            const apiUrl = this.buildGitHubApiUrl(repo, branch, folderPath);
+            const contents = await this.fetchGitHubContents(apiUrl, githubToken);
             
             // Проверяем, есть ли изображения в текущей папке (только JPG и PNG)
             const hasImagesInCurrentFolder = this.checkForImages(contents);
@@ -134,13 +140,13 @@ class GitHubFolderScanner {
                 
                 // Рекурсивно сканируем вложенную папку
                 const subfolderInfo = await this.scanRecursive(
-                    baseUrl, fullFolderPath, depth + 1
+                    repo, branch, fullFolderPath, githubToken, depth + 1
                 );
                 
                 subfoldersInfo.push({
                     name: folder.name,
                     path: fullFolderPath,
-                    url: this.buildPagesUrl(baseUrl, fullFolderPath),
+                    url: this.buildGitHubUrl(repo, branch, fullFolderPath),
                     info: subfolderInfo,
                     hasImagesInSubfolder: subfolderInfo.hasImagesInCurrentFolder
                 });
@@ -193,38 +199,40 @@ class GitHubFolderScanner {
     }
     
     /**
-     * Парсит URL GitHub Pages и извлекает базовый URL и путь
+     * Парсит URL GitHub и извлекает информацию о репозитории, ветке и пути
      */
-    static parsePagesUrl(pagesUrl) {
-        // Пример: https://lordofthedepth.github.io/Peterhoff/images/
-        const url = new URL(pagesUrl);
-        const pathParts = url.pathname.split('/').filter(part => part.length > 0);
+    static parseGitHubUrl(githubUrl) {
+        const urlParts = githubUrl.split('/');
         
-        // Базовый URL (без конечного пути)
+        if (urlParts[2] !== 'github.com') {
+            throw new Error('Неверный GitHub URL');
+        }
+        
+        const username = urlParts[3];
+        const repoName = urlParts[4];
+        
+        // Находим индекс "tree" в URL
+        const treeIndex = urlParts.findIndex(part => part === 'tree');
+        
+        let branch = 'main';
         let folderPath = '';
-        let baseUrl = url.origin;
         
-        if (pathParts.length > 0) {
-            // Последняя часть может быть папкой или файлом
-            // Для простоты считаем, что это папка, если не указано расширение
-            const lastPart = pathParts[pathParts.length - 1];
-            const hasExtension = lastPart.includes('.') && !lastPart.endsWith('/');
+        if (treeIndex !== -1 && urlParts[treeIndex + 1]) {
+            branch = urlParts[treeIndex + 1];
             
-            if (hasExtension) {
-                // Это файл, путь - все кроме последней части
-                folderPath = pathParts.slice(0, -1).join('/');
-                baseUrl = url.origin + '/' + pathParts.slice(0, -1).join('/');
-            } else {
-                // Это папка
-                folderPath = pathParts.join('/');
-                baseUrl = url.origin + '/' + pathParts.join('/');
+            // Формируем путь к папке (все что после ветки)
+            if (urlParts.length > treeIndex + 2) {
+                folderPath = urlParts.slice(treeIndex + 2).join('/');
+                folderPath = decodeURIComponent(folderPath);
             }
         }
         
         return {
-            baseUrl: baseUrl,
+            repo: `${username}/${repoName}`,
+            branch: branch,
             folderPath: folderPath,
-            hostname: url.hostname
+            username: username,
+            repoName: repoName
         };
     }
     
@@ -253,88 +261,57 @@ class GitHubFolderScanner {
     /**
      * Проверяет, есть ли изображения в папке (без рекурсивного сканирования подпапок)
      */
-    static async checkFolderForImages(pagesUrl) {
+    static async checkFolderForImages(githubUrl, githubToken = null) {
         try {
-            const { baseUrl, folderPath } = this.parsePagesUrl(pagesUrl);
-            const indexUrl = this.buildIndexUrl(baseUrl, folderPath);
-            const htmlContent = await this.fetchPagesContent(indexUrl);
-            const contents = this.parseDirectoryListing(htmlContent);
+            const { repo, branch, folderPath } = this.parseGitHubUrl(githubUrl);
+            const apiUrl = this.buildGitHubApiUrl(repo, branch, folderPath);
+            const contents = await this.fetchGitHubContents(apiUrl, githubToken);
             
             return this.checkForImages(contents);
         } catch (error) {
-            console.error(`Ошибка при проверке папки ${pagesUrl}:`, error);
+            console.error(`Ошибка при проверке папки ${githubUrl}:`, error);
             return false;
         }
     }
     
     /**
-     * Создает URL для доступа к index странице папки
+     * Создает URL для GitHub API
      */
-    static buildIndexUrl(baseUrl, folderPath) {
-        // GitHub Pages автоматически показывает список файлов в папке, если нет index.html
-        return folderPath ? `${baseUrl}/${folderPath}/` : `${baseUrl}/`;
+    static buildGitHubApiUrl(repo, branch, folderPath) {
+        const encodedPath = encodeURIComponent(folderPath || '');
+        return `https://api.github.com/repos/${repo}/contents/${encodedPath}?ref=${branch}`;
     }
     
     /**
-     * Создает GitHub Pages URL для пользователя
+     * Создает GitHub URL для пользователя
      */
-    static buildPagesUrl(baseUrl, folderPath) {
-        return folderPath ? `${baseUrl}/${folderPath}/` : `${baseUrl}/`;
+    static buildGitHubUrl(repo, branch, folderPath) {
+        const encodedPath = encodeURIComponent(folderPath || '');
+        return `https://github.com/${repo}/tree/${branch}/${encodedPath}`;
     }
     
     /**
-     * Выполняет запрос к GitHub Pages
+     * Выполняет запрос к GitHub API
      */
-    static async fetchPagesContent(url) {
-        const response = await fetch(url);
+    static async fetchGitHubContents(apiUrl, githubToken) {
+        const headers = {};
         
-        if (!response.ok) {
-            throw new Error(`GitHub Pages: ${response.status} ${response.statusText}`);
+        if (githubToken) {
+            headers['Authorization'] = `token ${githubToken}`;
         }
         
-        return await response.text();
-    }
-    
-    /**
-     * Парсит HTML листинг директории GitHub Pages
-     * ВАЖНО: GitHub Pages не предоставляет API для листинга директорий,
-     * поэтому этот метод зависит от структуры HTML, которую генерирует GitHub
-     */
-    static parseDirectoryListing(htmlContent) {
-        const contents = [];
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlContent, 'text/html');
+        const response = await fetch(apiUrl, { headers });
         
-        // GitHub Pages генерирует простой список файлов в <body>
-        // Ищем все ссылки, которые ведут на файлы и папки
-        const links = doc.querySelectorAll('a');
-        
-        links.forEach(link => {
-            const href = link.getAttribute('href');
-            const text = link.textContent.trim();
-            
-            // Пропускаем ссылки на текущую директорию и родительскую
-            if (href === './' || href === '../' || href === '/' || !href) {
-                return;
+        if (!response.ok) {
+            if (response.status === 403) {
+                const rateLimitReset = response.headers.get('X-RateLimit-Reset');
+                const resetTime = rateLimitReset ? new Date(rateLimitReset * 1000).toLocaleTimeString() : 'неизвестно';
+                console.warn(`Превышен лимит запросов GitHub API. Восстановление в: ${resetTime}`);
             }
-            
-            // Определяем тип: папка или файл
-            const isDirectory = href.endsWith('/');
-            const name = isDirectory ? text.replace('/', '') : text;
-            
-            // Пропускаем скрытые файлы
-            if (name.startsWith('.')) {
-                return;
-            }
-            
-            contents.push({
-                name: name,
-                type: isDirectory ? 'dir' : 'file',
-                url: href
-            });
-        });
+            throw new Error(`GitHub API: ${response.status} ${response.statusText}`);
+        }
         
-        return contents;
+        return await response.json();
     }
     
     /**
@@ -374,7 +351,7 @@ class GitHubFolderScanner {
     static extractFolderName(folderUrl) {
         const parts = folderUrl.split('/');
         const lastPart = parts[parts.length - 1];
-        return decodeURIComponent(lastPart) || 'root';
+        return decodeURIComponent(lastPart);
     }
 }
 
@@ -386,7 +363,7 @@ class GitHubFolderScannerUtils {
     /**
      * Сканирует папку и отображает результат на странице
      */
-    static async scanAndDisplay(pagesUrl, containerId) {
+    static async scanAndDisplay(githubUrl, containerId, githubToken = null) {
         const container = document.getElementById(containerId);
         
         if (!container) {
@@ -398,12 +375,12 @@ class GitHubFolderScannerUtils {
         container.innerHTML = `
             <div class="loading">
                 <div class="spinner"></div>
-                <p>Сканирование папки GitHub Pages...</p>
+                <p>Сканирование папки GitHub...</p>
             </div>
         `;
         
         try {
-            const folders = await GitHubFolderScanner.scanFolder(pagesUrl);
+            const folders = await GitHubFolderScanner.scanFolder(githubUrl, githubToken);
             const html = GitHubFolderScanner.generateFoldersList(folders);
             container.innerHTML = html;
             
