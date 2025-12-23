@@ -3,6 +3,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
 <script src="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/js/Gallery.js"></script>
 <script src="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/js/Utills.js"></script>
+<script src="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/js/BaseElementsCreation.js"></script>
 
 <div class="root-container">
 <div class="container">
@@ -41,17 +42,7 @@
 </div>
 <script>
 
-  createElement("background","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Background.html")
-  
-  createElement("header","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/PeterhofHeader.html").then(() => {insertHtml("page-title","Петергоф до войны")}).then(() => 
-{
-    insertHtml("page-title-img", "<img src = https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_Ptrg.jpg?raw=true> </img>"
-
-    )
-});
-  createElement("buttons","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/PeterhofButtons.html?refresh=1")
-
-  createElement("footer-container","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Footer.html?refresh=1")
+createBaseElements("Петергоф до войны", "https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_Ptrg.jpg?raw=true>");
 
 </script>
 

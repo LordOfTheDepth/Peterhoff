@@ -1,8 +1,9 @@
-<link rel="stylesheet" href="css/MainStyle.css">
+<link rel="stylesheet" href="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/css/MainStyle.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css" />
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
-<script src="js/Gallery.js"></script>
-<script src="js/Utills.js"></script>
+<script src="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/js/Gallery.js"></script>
+<script src="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/js/Utills.js"></script>
+<script src="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/js/BaseElementsCreation.js"></script>
 
 
 <div class="root-container">
@@ -91,23 +92,14 @@
 </div>
 <script>
 
-  createElement("background","html/Background.html")
-  
-  createElement("header","html/PeterhofHeader.html").then(() => {insertHtml("page-title","Петергоф: восстановление")}).then(() => 
-    {
-    insertHtml("page-title-img", "<img src = https://github.com/LordOfTheDepth/Peterhoff/blob/NewGallery/Misc/verh_Ptrg_vosst.jpg?raw=true></img>"
+createBaseElements("Петергоф: восстановление", "https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_Ptrg_vosst.jpg?raw=true");
 
-    )
-    });
-  
-  createElement("buttons","html/PeterhofButtons.html")
 
-  createElement("footer-container","html/Footer.html")
 
 </script>
 
 <script>
-    const initialUrl = "https://github.com/LordOfTheDepth/Peterhoff/tree/NewGallery/Sorted/%D0%B2%D0%BE%D1%81%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5";
+    const initialUrl = "https://github.com/LordOfTheDepth/Peterhoff/tree/main/Sorted/%D0%B2%D0%BE%D1%81%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5";
     
     GitHubFolderScanner.scanFolder(initialUrl)
         .then(folders => {
