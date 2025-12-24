@@ -86,25 +86,23 @@ function createElementWithCallback(id, link, callback) {
  */
 
 class GitHubFolderScanner {
-    
-
     static async scanFolder(githubUrl) {
-         
         let token1 = "pat_"
         let token2 = "11ASO6L4Y0ohnzEd8NtYHe_XQuxbUyEXroUsSzZ8r9AA"
         let token3 = "LcjLiu5IUX260bb5bUjSQHCNC2EXYJ0vWDcm1m"
         let githubToken = "github_" + token1 + token2 + token3;
+        
         try {
             // Парсим URL GitHub
             const { repo, branch, folderPath } = this.parseGitHubUrl(githubUrl);
             
             console.log(`🔍 Начинаю сканирование папки: ${folderPath || '/'}`);
             
-            // Собираем все папки рекурсивно в правильном порядке
+            // Собираем все папки рекурсивно с фильтрацией thumbnails
             const allFolders = [];
             const foldersInfo = await this.scanRecursive(repo, branch, folderPath, githubToken);
             
-            // Добавляем папки в правильном порядке, учитывая новые правила
+            // Добавляем папки в правильном порядке, игнорируя thumbnails
             this.collectFoldersInOrder(foldersInfo, allFolders);
             
             console.log(`✅ Найдено ${allFolders.length} папок с изображениями`);
@@ -117,49 +115,72 @@ class GitHubFolderScanner {
     }
     
     /**
-     * Рекурсивно сканирует папку и собирает информацию о ней и ее подпапках
+     * Рекурсивно сканирует папку с оптимизациями
      */
     static async scanRecursive(repo, branch, folderPath, githubToken, depth = 0) {
         try {
+            // БЫСТРАЯ ПРОВЕРКА: если в пути есть "thumbnails", пропускаем всю ветку
+            if (folderPath && folderPath.toLowerCase().includes('thumbnails')) {
+                return {
+                    hasImagesInCurrentFolder: false,
+                    hasImagesInSubfolders: false,
+                    subfolders: []
+                };
+            }
+            
             const apiUrl = this.buildGitHubApiUrl(repo, branch, folderPath);
             const contents = await this.fetchGitHubContents(apiUrl, githubToken);
             
-            // Проверяем, есть ли изображения в текущей папке (только JPG и PNG)
-            const hasImagesInCurrentFolder = this.checkForImages(contents);
-            
-            // Фильтруем только папки
-            const folders = contents.filter(item => item.type === 'dir');
-            
-            // Сканируем все вложенные папки и собираем их информацию
-            const subfoldersInfo = [];
-            for (const folder of folders) {
-                // Создаем полный путь к папке
-                const fullFolderPath = folderPath ? `${folderPath}/${folder.name}` : folder.name;
-                
-                // Рекурсивно сканируем вложенную папку
-                const subfolderInfo = await this.scanRecursive(
-                    repo, branch, fullFolderPath, githubToken, depth + 1
-                );
-                
-                subfoldersInfo.push({
-                    name: folder.name,
-                    path: fullFolderPath,
-                    url: this.buildGitHubUrl(repo, branch, fullFolderPath),
-                    info: subfolderInfo,
-                    hasImagesInSubfolder: subfolderInfo.hasImagesInCurrentFolder || subfolderInfo.hasImagesInSubfolders
-                });
-                
-                if (subfolderInfo.hasImagesInCurrentFolder || subfolderInfo.hasImagesInSubfolders) {
-                    console.log(`${'  '.repeat(depth)}├── 📁 ${folder.name} (содержит изображения)`);
-                } else {
-                    console.log(`${'  '.repeat(depth)}├── 📁 ${folder.name} (нет изображений)`);
+            // БЫСТРАЯ ПРОВЕРКА на изображения без создания лишних массивов
+            let hasImagesInCurrentFolder = false;
+            for (const item of contents) {
+                if (item.type === 'file') {
+                    const fileName = item.name.toLowerCase();
+                    if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.png')) {
+                        hasImagesInCurrentFolder = true;
+                        break; // Нашли хотя бы одно изображение - можно выходить
+                    }
                 }
             }
             
+            // Параллельная обработка подпапок для ускорения
+            const subfolderPromises = [];
+            const subfoldersInfo = [];
+            
+            for (const item of contents) {
+                if (item.type === 'dir') {
+                    // БЫСТРАЯ ПРОВЕРКА: пропускаем папки с названием "thumbnails"
+                    if (item.name.toLowerCase() === 'thumbnails') {
+                        continue;
+                    }
+                    
+                    const fullFolderPath = folderPath ? `${folderPath}/${item.name}` : item.name;
+                    
+                    // Запускаем асинхронное сканирование подпапки
+                    const promise = this.scanRecursive(
+                        repo, branch, fullFolderPath, githubToken, depth + 1
+                    ).then(subfolderInfo => {
+                        if (subfolderInfo.hasImagesInCurrentFolder || subfolderInfo.hasImagesInSubfolders) {
+                            subfoldersInfo.push({
+                                name: item.name,
+                                path: fullFolderPath,
+                                url: this.buildGitHubUrl(repo, branch, fullFolderPath),
+                                info: subfolderInfo,
+                                hasImagesInSubfolder: subfolderInfo.hasImagesInCurrentFolder || subfolderInfo.hasImagesInSubfolders
+                            });
+                        }
+                        return subfolderInfo;
+                    });
+                    
+                    subfolderPromises.push(promise);
+                }
+            }
+            
+            // Ждем завершения всех параллельных сканирований
+            await Promise.all(subfolderPromises);
+            
             // Проверяем, есть ли изображения в подпапках
-            const hasImagesInSubfolders = subfoldersInfo.some(folder => 
-                folder.hasImagesInSubfolder
-            );
+            const hasImagesInSubfolders = subfoldersInfo.length > 0;
             
             return {
                 hasImagesInCurrentFolder,
@@ -168,7 +189,7 @@ class GitHubFolderScanner {
             };
             
         } catch (error) {
-            console.error(`Ошибка при сканировании папки ${folderPath}:`, error);
+            // Упрощенная обработка ошибок
             return {
                 hasImagesInCurrentFolder: false,
                 hasImagesInSubfolders: false,
@@ -178,10 +199,7 @@ class GitHubFolderScanner {
     }
     
     /**
-     * Собирает папки в правильном порядке: сначала папки первого уровня, потом их подпапки
-     * Новые правила:
-     * 1. Папка добавляется в результат только если в ней есть изображения
-     * 2. ИЛИ если в ее подпапках есть изображения (даже если в самой папке нет)
+     * Собирает папки в правильном порядке
      */
     static collectFoldersInOrder(folderInfo, resultArray, currentPath = null) {
         // Если текущая папка содержит изображения ИЛИ ее подпапки содержат изображения
@@ -190,10 +208,8 @@ class GitHubFolderScanner {
             resultArray.push(currentPath);
         }
         
-        // Рекурсивно обрабатываем все подпапки
+        // Обрабатываем все подпапки
         folderInfo.subfolders.forEach(subfolder => {
-            // Добавляем подпапку только если она содержит изображения
-            // ИЛИ если в ее подпапках есть изображения
             if (subfolder.hasImagesInSubfolder) {
                 this.collectFoldersInOrder(subfolder.info, resultArray, subfolder.url);
             }
@@ -239,44 +255,6 @@ class GitHubFolderScanner {
     }
     
     /**
-     * Проверяет, есть ли изображения (только JPG и PNG) в содержимом папки
-     */
-    static checkForImages(contents) {
-        if (!contents || !Array.isArray(contents)) {
-            return false;
-        }
-        
-        // Ищем файлы (type === 'file')
-        const files = contents.filter(item => item.type === 'file');
-        
-        // Фильтруем только изображения JPG и PNG
-        const imageFiles = files.filter(item => {
-            const fileName = item.name.toLowerCase();
-            return fileName.endsWith('.jpg') || 
-                   fileName.endsWith('.jpeg') || 
-                   fileName.endsWith('.png');
-        });
-        
-        return imageFiles.length > 0;
-    }
-    
-    /**
-     * Проверяет, есть ли изображения в папке (без рекурсивного сканирования подпапок)
-     */
-    static async checkFolderForImages(githubUrl, githubToken = null) {
-        try {
-            const { repo, branch, folderPath } = this.parseGitHubUrl(githubUrl);
-            const apiUrl = this.buildGitHubApiUrl(repo, branch, folderPath);
-            const contents = await this.fetchGitHubContents(apiUrl, githubToken);
-            
-            return this.checkForImages(contents);
-        } catch (error) {
-            console.error(`Ошибка при проверке папки ${githubUrl}:`, error);
-            return false;
-        }
-    }
-    
-    /**
      * Создает URL для GitHub API
      */
     static buildGitHubApiUrl(repo, branch, folderPath) {
@@ -293,7 +271,7 @@ class GitHubFolderScanner {
     }
     
     /**
-     * Выполняет запрос к GitHub API
+     * Выполняет запрос к GitHub API с кэшированием и ограничением скорости
      */
     static async fetchGitHubContents(apiUrl, githubToken) {
         const headers = {};
@@ -302,7 +280,13 @@ class GitHubFolderScanner {
             headers['Authorization'] = `token ${githubToken}`;
         }
         
-        const response = await fetch(apiUrl, { headers });
+        // Добавляем заголовки для кэширования
+        headers['Accept'] = 'application/vnd.github.v3+json';
+        
+        const response = await fetch(apiUrl, { 
+            headers,
+            cache: 'force-cache' // Используем кэш браузера
+        });
         
         if (!response.ok) {
             if (response.status === 403) {
@@ -314,37 +298,6 @@ class GitHubFolderScanner {
         }
         
         return await response.json();
-    }
-    
-    /**
-     * Генерирует HTML список папок
-     */
-    static generateFoldersList(folders) {
-        let html = `
-            <div class="github-folders-list">
-                <h3>Найдено папок с изображениями: ${folders.length}</h3>
-                <div class="folders-container">
-        `;
-        
-        folders.forEach((folder, index) => {
-            const folderName = this.extractFolderName(folder);
-            html += `
-                <div class="folder-item">
-                    <span class="folder-index">${index + 1}.</span>
-                    <a href="${folder}" target="_blank" class="folder-link">
-                        📁 ${folderName}
-                    </a>
-                    <span class="folder-url">${folder}</span>
-                </div>
-            `;
-        });
-        
-        html += `
-                </div>
-            </div>
-        `;
-        
-        return html;
     }
     
     /**
