@@ -157,11 +157,14 @@
                     
                     const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
                     
-                    // Загружаем описания И список файлов параллельно
-                    const [descriptionsData, filesResponse] = await Promise.all([
-                        loadDescriptionsJSON(),
-                        fetchGitHubAPI(`https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}?ref=${GITHUB_BRANCH}`)
-                    ]);
+                    // Загружаем список файлов
+                    let filesResponse;
+                    try {
+                        filesResponse = await fetchGitHubAPI(`https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}?ref=${GITHUB_BRANCH}`);
+                    } catch (error) {
+                        console.log('Ошибка при загрузке списка файлов:', error.message);
+                        return [];
+                    }
                     
                     const filesData = await filesResponse.json();
                     
@@ -173,6 +176,14 @@
                                fileName.endsWith('.jpeg') || 
                                fileName.endsWith('.png');
                     });
+
+                    // Пытаемся загрузить JSON с описаниями, но не падаем если не найден
+                    let descriptionsData = {};
+                    try {
+                        descriptionsData = await loadDescriptionsJSON();
+                    } catch (error) {
+                        console.log('JSON с описаниями не найден, продолжаем без него');
+                    }
 
                     if(title == "") {
                         title = descriptionsData[Object.keys(descriptionsData).find(key => 
@@ -189,7 +200,6 @@
                     console.log(`Заголовок: ${title}.`);
                     console.log(`Подзаголовок: ${subtitle}.`);
                     console.log(`🖼️ Найдено ${imageFiles.length} изображений.`);
-                    console.log('Загруженные описания:', descriptionsData);
                     
                     // Создаем массив для хранения информации об изображениях
                     const imagesInfo = imageFiles.map(item => {
