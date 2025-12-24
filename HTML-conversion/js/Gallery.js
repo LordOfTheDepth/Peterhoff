@@ -261,11 +261,14 @@
                 }
                 
                 let galleryHtml = "";
-                // Всегда отображаем элемент для title, даже если он пустой
-                galleryHtml += `<div class="gallery-title"><h1>${escapeHtml(title || '')}</h1></div>`;
-                
+                if(title && title !== "null") {
+                    galleryHtml += `<div class="gallery-title"><h1>${escapeHtml(title)}</h1></div>`;
+                }
                 if(subtitle && subtitle !== "null") {
                     galleryHtml += `<div class="gallery-subtitle"><h2>${escapeHtml(subtitle)}</h2></div>`;
+                }
+                if((!title || title == "null") && (!subtitle || subtitle == "null")) {
+                    galleryHtml += `<div class="gallery-title"><h1> </h1></div>`;
                 }
 
                 galleryHtml += `
