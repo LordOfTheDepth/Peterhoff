@@ -8,29 +8,34 @@ function scanAndLoad(initialUrl) {
     
     GitHubFolderScanner.scanFolder(initialUrl)
         .then(folders => {
-            console.log('Всего папок до фильтрации:', folders.length);
+            console.log('Всего элементов до фильтрации:', folders.length);
             
-            // Фильтруем папки, исключая папки с названием "thumbnails"
+            // Фильтруем элементы, исключая папки с названием "thumbnails"
             const filteredFolders = folders.filter(folderUrl => {
                 // Парсим URL папки
                 const folderInfo = GitHubFolderScanner.parseGitHubUrl(folderUrl);
                 const folderPath = folderInfo.folderPath || "";
                 
-                // Получаем последний сегмент пути (название папки)
+                console.log('Проверяемый путь:', folderPath);
+                
+                // Разбиваем путь на сегменты
                 const pathSegments = folderPath.split('/').filter(segment => segment.length > 0);
-                const lastSegment = pathSegments.length > 0 ? pathSegments[pathSegments.length - 1] : "";
                 
-                // Игнорируем папки с названием "thumbnails" (без учета регистра)
-                const shouldIgnore = lastSegment.toLowerCase() === 'thumbnails';
+                // Проверяем ВСЕ сегменты пути на наличие "thumbnails"
+                const hasThumbnailsInPath = pathSegments.some(segment => 
+                    segment.toLowerCase() === 'thumbnails'
+                );
                 
-                if (shouldIgnore) {
-                    console.log('Игнорируем папку thumbnails:', folderUrl);
+                if (hasThumbnailsInPath) {
+                    console.log('Игнорируем элемент с thumbnails в пути:', folderUrl);
+                    return false;
                 }
                 
-                return !shouldIgnore;
+                return true;
             });
             
-            console.log('Всего папок после фильтрации:', filteredFolders.length);
+            console.log('Всего элементов после фильтрации:', filteredFolders.length);
+            console.log('Отфильтрованные элементы:', filteredFolders);
             
             // Парсим начальную папку
             const initialInfo = GitHubFolderScanner.parseGitHubUrl(initialUrl);
