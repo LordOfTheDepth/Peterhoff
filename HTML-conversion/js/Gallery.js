@@ -260,7 +260,7 @@
                     console.error(`❌ Контейнер с id="${GALLERY_ID}" не найден`);
                     return;
                 }
-                
+                 
                 // if (!entries || entries.length === 0) {
                 //     container.innerHTML = `
                 //         <div class="no-media">
