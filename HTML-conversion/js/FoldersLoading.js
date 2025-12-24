@@ -8,7 +8,29 @@ function scanAndLoad(initialUrl) {
     
     GitHubFolderScanner.scanFolder(initialUrl)
         .then(folders => {
-            console.log('Всего папок:', folders.length);
+            console.log('Всего папок до фильтрации:', folders.length);
+            
+            // Фильтруем папки, исключая папки с названием "thumbnails"
+            const filteredFolders = folders.filter(folderUrl => {
+                // Парсим URL папки
+                const folderInfo = GitHubFolderScanner.parseGitHubUrl(folderUrl);
+                const folderPath = folderInfo.folderPath || "";
+                
+                // Получаем последний сегмент пути (название папки)
+                const pathSegments = folderPath.split('/').filter(segment => segment.length > 0);
+                const lastSegment = pathSegments.length > 0 ? pathSegments[pathSegments.length - 1] : "";
+                
+                // Игнорируем папки с названием "thumbnails" (без учета регистра)
+                const shouldIgnore = lastSegment.toLowerCase() === 'thumbnails';
+                
+                if (shouldIgnore) {
+                    console.log('Игнорируем папку thumbnails:', folderUrl);
+                }
+                
+                return !shouldIgnore;
+            });
+            
+            console.log('Всего папок после фильтрации:', filteredFolders.length);
             
             // Парсим начальную папку
             const initialInfo = GitHubFolderScanner.parseGitHubUrl(initialUrl);
@@ -24,7 +46,7 @@ function scanAndLoad(initialUrl) {
             // Очищаем контейнер перед добавлением новых галерей
             mainContainer.innerHTML = '';
             
-            folders.forEach((folderUrl, index) => {
+            filteredFolders.forEach((folderUrl, index) => {
                 // Создаем контейнер для галереи
                 const galleryId = `gallery-${index + 1}`;
                 const galleryDiv = document.createElement('div');

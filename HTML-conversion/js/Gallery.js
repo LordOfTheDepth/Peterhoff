@@ -37,6 +37,7 @@
             
             // Декодируем папку из URL-encoded формата
             GITHUB_FOLDER = decodeURIComponent(GITHUB_FOLDER);
+            
             function escapeHtmlAttribute(url) {
             if (!url) return '';
             return String(url)
@@ -46,6 +47,7 @@
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;');
             }
+            
             // Функция для правильного декодирования base64 с учетом UTF-8
             function decodeBase64UTF8(base64) {
                 try {
@@ -150,6 +152,70 @@
                 }
             }
             
+            // Функция для проверки существования папки thumbnails
+            async function checkThumbnailsFolder() {
+                try {
+                    const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
+                    const thumbnailsUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}/thumbnails?ref=${GITHUB_BRANCH}`;
+                    
+                    console.log(`Проверяю наличие папки thumbnails: ${thumbnailsUrl}`);
+                    
+                    const response = await fetchGitHubAPI(thumbnailsUrl);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Если это массив, значит это папка с содержимым
+                        if (Array.isArray(data)) {
+                            console.log('✅ Папка thumbnails найдена');
+                            return true;
+                        }
+                    }
+                    
+                    console.log('Папка thumbnails не найдена');
+                    return false;
+                } catch (error) {
+                    console.log('Папка thumbnails не найдена или ошибка:', error.message);
+                    return false;
+                }
+            }
+            
+            // Функция для поиска миниатюры для файла
+            async function findThumbnailForFile(imageName, hasThumbnailsFolder) {
+                // Если нет папки thumbnails, возвращаем оригинальный URL
+                if (!hasThumbnailsFolder) {
+                    return null;
+                }
+                
+                try {
+                    const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
+                    const thumbnailsUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}/thumbnails?ref=${GITHUB_BRANCH}`;
+                    
+                    const response = await fetchGitHubAPI(thumbnailsUrl);
+                    
+                    if (response.ok) {
+                        const thumbnailsData = await response.json();
+                        
+                        // Ищем файл с таким же именем в папке thumbnails
+                        const thumbnailItem = thumbnailsData.find(item => 
+                            item.type === 'file' && item.name === imageName
+                        );
+                        
+                        if (thumbnailItem) {
+                            console.log(`✅ Найдена миниатюра для: ${imageName}`);
+                            return thumbnailItem.download_url;
+                        } else {
+                            console.log(`❌ Миниатюра не найдена для: ${imageName}`);
+                            return null;
+                        }
+                    }
+                    
+                    return null;
+                } catch (error) {
+                    console.log(`Ошибка при поиске миниатюры для ${imageName}:`, error.message);
+                    return null;
+                }
+            }
+            
             // Основная функция загрузки данных с GitHub
             async function loadFromGitHub() {
                 try {
@@ -177,6 +243,9 @@
                                fileName.endsWith('.png');
                     });
 
+                    // Проверяем наличие папки thumbnails
+                    const hasThumbnailsFolder = await checkThumbnailsFolder();
+
                     // Пытаемся загрузить JSON с описаниями, но не падаем если не найден
                     let descriptionsData = {};
                     try {
@@ -200,9 +269,13 @@
                     console.log(`Заголовок: ${title}.`);
                     console.log(`Подзаголовок: ${subtitle}.`);
                     console.log(`🖼️ Найдено ${imageFiles.length} изображений.`);
+                    console.log(`📁 Папка thumbnails: ${hasThumbnailsFolder ? 'найдена' : 'не найдена'}`);
                     
                     // Создаем массив для хранения информации об изображениях
-                    const imagesInfo = imageFiles.map(item => {
+                    const imagesInfo = [];
+                    
+                    // Обрабатываем каждый файл изображения
+                    for (const item of imageFiles) {
                         const displayTitle = item.name.replace(/\.[^.]+$/, "");
                         
                         // Пробуем найти описание разными способами
@@ -233,16 +306,28 @@
                         // Создаем усеченную версию для миниатюры
                         const truncatedDescription = description; //truncateText(description, 100);
                         
-                        return {
+                        // Ищем миниатюру для этого файла
+                        let thumbnailUrl = item.download_url;
+                        if (hasThumbnailsFolder) {
+                            const foundThumbnailUrl = await findThumbnailForFile(item.name, hasThumbnailsFolder);
+                            if (foundThumbnailUrl) {
+                                thumbnailUrl = foundThumbnailUrl;
+                                console.log(`✅ Использую миниатюру для: ${item.name}`);
+                            } else {
+                                console.log(`⚠️ Миниатюра не найдена, использую оригинал для: ${item.name}`);
+                            }
+                        }
+                        
+                        imagesInfo.push({
                             title: item.name,
                             displayTitle: displayTitle,
                             directUrl: item.download_url,
-                            thumbnailUrl: item.download_url,
+                            thumbnailUrl: thumbnailUrl,
                             description: description,
                             truncatedDescription: truncatedDescription,
                             uuid: item.sha
-                        };
-                    });
+                        });
+                    }
                     
                     return imagesInfo;
                     

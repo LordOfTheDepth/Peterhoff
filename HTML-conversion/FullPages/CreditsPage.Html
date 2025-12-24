@@ -12,16 +12,16 @@
 <div id="header"></div>
 <div id="buttons"></div>
 
-<div class="main-text-container">
-    <h1 class="header-content align-center">
+<div class="gallery-subtitle">
+    <!-- <h1 class="header-content align-center">
 Над выставкой работали:
-<span class = "nobr">(1705–1941 гг.)</span>
-    </h1>
+    </h1> -->
   <div class="main-text-content align-justify size-medium">
-Человек 1
-Человек 2
-Человек 3
-...
+    <p><br>
+        Человек 1 <br>
+    Человек 2<br>
+    Человек 3</p>
+    ...
 
   </div>
 </div>
@@ -35,6 +35,15 @@
 </div>
 
 
-<script>  createElement("footer-container","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Footer.html?refresh=1")
+<script>  
+  createElement("background","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Background.html")
+  
+  createElement("header","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/PeterhofHeader.html").then(() => {insertHtml("page-title","Над выставкой работали")}).then(() => 
+{
+    insertHtml("page-title-img", `<img src = https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_push_vosst.jpg?raw=true> </img>`)
+});
+
+
+createElement("footer-container","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Footer.html?refresh=1")
 </script>
 

@@ -1,14 +1,25 @@
 import os
 import json
-import re
 import shutil
 from openpyxl import load_workbook
-from pathlib import Path
 import logging
 from datetime import datetime
 
-# ========== НАСТРОЙКИ ==========
+# Импортируем генератор миниатюр из того же каталога
+try:
+    from ThumbnailsGenerator import ThumbnailGenerator
+    THUMBNAIL_GENERATOR_AVAILABLE = True
+    logger = logging.getLogger(__name__)
+    logger.info("ThumbnailGenerator успешно импортирован")
+except ImportError as e:
+    THUMBNAIL_GENERATOR_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Не удалось импортировать ThumbnailGenerator: {e}")
+    logger.warning("Миниатюры создаваться не будут")
 
+# ========== НАСТРОЙКИ ==========
+THUMBNAIL_SIZE = (300, 300)  # Максимальный размер миниатюры
+THUMBNAIL_QUALITY = 85       # Качество миниатюр (1-100)
 # ===============================
 
 # Настройка логирования
@@ -62,13 +73,8 @@ def sanitize_folder_name(folder_name):
     for char in invalid_chars:
         folder_name = folder_name.replace(char, '')
     
-
-    # Ограничиваем длину (опционально)
-
-        
     # Удаляем начальные и конечные пробелы и точки
     folder_name = folder_name.strip(' .')
-    
     
     # Если после очистки имя пустое, используем имя листа
     if not folder_name:
@@ -80,57 +86,95 @@ def ensure_descriptions_json_in_all_parents(folder_path, folder_name, subfolder_
     """Обеспечивает наличие descriptions.json во всех родительских папках"""
     # Начинаем с текущей папки и идем вверх до целевой директории
     current_dir = folder_path
-    base_dir = os.path.dirname(folder_path) if subfolder_name else folder_path
     
-    # Если есть подпапка, создаем JSON для родительской папки
-    if subfolder_name:
-        parent_dir = os.path.dirname(folder_path) if os.path.basename(folder_path) == subfolder_name[:25].strip(" .") else folder_path
+    # Проверяем все уровни вверх
+    while current_dir and os.path.exists(current_dir):
+        json_path = os.path.join(current_dir, "descriptions.json")
         
-        # Проверяем все уровни вверх
-        while current_dir != os.path.dirname(base_dir) and os.path.exists(current_dir):
-            json_path = os.path.join(current_dir, "descriptions.json")
+        # Проверяем, существует ли уже JSON файл
+        if not os.path.exists(json_path):
+            # Создаем базовый JSON с title и subtitle
+            descriptions = {}
             
-            # Проверяем, существует ли уже JSON файл
-            if not os.path.exists(json_path):
-                # Создаем базовый JSON с title и subtitle
-                descriptions = {}
-                
-                # Определяем title для текущей папки
-                if current_dir == folder_path and subfolder_name:
+            # Определяем title для текущей папки
+            current_folder_name = os.path.basename(current_dir)
+            
+            if current_dir == folder_path:
+                # Это целевая папка (подпапка или основная)
+                if subfolder_name and os.path.basename(current_dir) == subfolder_name[:25].strip(" ."):
                     # Это подпапка
                     descriptions["__title__"] = folder_name if folder_name != "Неизвестная папка" else ""
                     descriptions["__subtitle__"] = subfolder_name if subfolder_name else ""
                 else:
-                    # Это родительская папка
-                    parent_folder_name = os.path.basename(current_dir)
-                    descriptions["__title__"] = parent_folder_name if parent_folder_name != "Неизвестная папка" else ""
+                    # Это основная папка
+                    descriptions["__title__"] = folder_name if folder_name != "Неизвестная папка" else ""
                     descriptions["__subtitle__"] = ""
-                
-                try:
-                    with open(json_path, 'w', encoding='utf-8') as f:
-                        json.dump(descriptions, f, ensure_ascii=False, indent=4)
-                    logger.info(f"Создан descriptions.json в родительской папке: {current_dir}")
-                    logger.info(f"Title: {descriptions['__title__']}, Subtitle: {descriptions['__subtitle__']}")
-                except Exception as e:
-                    logger.error(f"Ошибка при создании JSON в {current_dir}: {e}")
+            else:
+                # Это родительская папка
+                descriptions["__title__"] = current_folder_name if current_folder_name != "Неизвестная папка" else ""
+                descriptions["__subtitle__"] = ""
             
-            # Поднимаемся на уровень выше
-            current_dir = os.path.dirname(current_dir)
-    else:
-        # Нет подпапки, просто создаем JSON в текущей папке если его нет
-        json_path = os.path.join(folder_path, "descriptions.json")
-        if not os.path.exists(json_path):
-            descriptions = {
-                "__title__": folder_name if folder_name != "Неизвестная папка" else "",
-                "__subtitle__": ""
-            }
             try:
                 with open(json_path, 'w', encoding='utf-8') as f:
                     json.dump(descriptions, f, ensure_ascii=False, indent=4)
-                logger.info(f"Создан descriptions.json в папке: {folder_path}")
-                logger.info(f"Title: {descriptions['__title__']}")
+                logger.info(f"Создан descriptions.json в папке: {current_dir}")
+                logger.info(f"Title: {descriptions['__title__']}, Subtitle: {descriptions['__subtitle__']}")
             except Exception as e:
-                logger.error(f"Ошибка при создании JSON в {folder_path}: {e}")
+                logger.error(f"Ошибка при создании JSON в {current_dir}: {e}")
+        
+        # Поднимаемся на уровень выше
+        parent_dir = os.path.dirname(current_dir)
+        if parent_dir == current_dir:  # Достигли корня
+            break
+        current_dir = parent_dir
+
+def create_thumbnails_for_folder(folder_path, thumbnail_generator):
+    """
+    Создает миниатюры для всех изображений в указанной папке
+    
+    Args:
+        folder_path (str): Путь к папке с изображениями
+        thumbnail_generator: Экземпляр ThumbnailGenerator
+    
+    Returns:
+        int: Количество созданных миниатюр
+    """
+    if not THUMBNAIL_GENERATOR_AVAILABLE:
+        logger.warning("Генератор миниатюр недоступен, пропускаем создание миниатюр")
+        return 0
+    
+    # Создаем папку для миниатюр
+    thumbnails_folder = os.path.join(folder_path, "thumbnails")
+    os.makedirs(thumbnails_folder, exist_ok=True)
+    
+    created_count = 0
+    
+    try:
+        # Получаем список всех файлов в папке
+        for filename in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, filename)
+            
+            # Проверяем, является ли файл изображением
+            if os.path.isfile(file_path):
+                ext = os.path.splitext(filename)[1].lower()
+                image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp'}
+                
+                if ext in image_extensions:
+                    # Создаем миниатюру
+                    result = thumbnail_generator.createThumbnail(file_path, thumbnails_folder)
+                    if result:
+                        created_count += 1
+                        logger.debug(f"Создана миниатюра для: {filename}")
+        
+        if created_count > 0:
+            logger.info(f"Создано {created_count} миниатюр в {thumbnails_folder}")
+        else:
+            logger.info(f"В папке нет изображений для создания миниатюр: {folder_path}")
+            
+    except Exception as e:
+        logger.error(f"Ошибка при создании миниатюр для папки {folder_path}: {e}")
+    
+    return created_count
 
 def get_all_files_recursive(folder_path):
     """Получает все файлы из папки и всех ее подпапок"""
@@ -173,6 +217,16 @@ def DoFolder(source_folder, table, dest_folder):
     # Создаем конечную папку, если ее нет
     os.makedirs(dest_folder_fixed, exist_ok=True)
     
+    # Создаем генератор миниатюр
+    if THUMBNAIL_GENERATOR_AVAILABLE:
+        thumbnail_generator = ThumbnailGenerator(
+            max_size=THUMBNAIL_SIZE,
+            quality=THUMBNAIL_QUALITY,
+            format='JPEG'
+        )
+    else:
+        thumbnail_generator = None
+    
     # Создаем список для сбора информации о не найденных файлах
     not_found_reports = []
     
@@ -181,7 +235,6 @@ def DoFolder(source_folder, table, dest_folder):
     all_files = get_all_files_recursive(source_folder_fixed)
     
     # Создаем карту нормализованных имен
-    # Ключ: нормализованное имя, Значение: список путей к файлам с таким именем
     normalized_map = {}
     file_count = 0
     
@@ -201,9 +254,6 @@ def DoFolder(source_folder, table, dest_folder):
     
     # Логируем количество уникальных нормализованных имен
     logger.info(f"Найдено {file_count} файлов, {len(normalized_map)} уникальных нормализованных имен")
-    
-    # Выводим несколько примеров для отладки
-    logger.debug(f"Примеры нормализованных имен (первые 5): {list(normalized_map.keys())[:5]}")
     
     # Загружаем Excel файл
     try:
@@ -287,7 +337,7 @@ def DoFolder(source_folder, table, dest_folder):
                     logger.warning(f"Найдено {len(matched_files)} файлов для '{image_name}': {[f['filename'] for f in matched_files]}")
                     multiple_found_count += 1
                 
-                # Берем первый найденный файл (можно изменить логику если нужно все)
+                # Берем первый найденный файл
                 file_info = matched_files[0]
                 matched_file_path = file_info['full_path']
                 matched_filename = file_info['filename']
@@ -349,13 +399,18 @@ def DoFolder(source_folder, table, dest_folder):
                 json.dump(descriptions, f, ensure_ascii=False, indent=4)
             
             if copied_count > 0:
-                logger.info(f"Создан {json_path} с {len(descriptions) - 2} записями файлов")  # -2 потому что title и subtitle
+                logger.info(f"Создан {json_path} с {len(descriptions) - 2} записями файлов")
             else:
                 logger.info(f"Создан {json_path} только с title и subtitle (нет изображений)")
             
             logger.info(f"Title: {descriptions['__title__']}, Subtitle: {descriptions['__subtitle__']}")
         except Exception as e:
             logger.error(f"Ошибка при сохранении JSON: {e}")
+        
+        # СОЗДАЕМ МИНИАТЮРЫ ДЛЯ ЭТОЙ ПАПКИ
+        if thumbnail_generator and os.path.exists(sheet_folder):
+            thumbnails_created = create_thumbnails_for_folder(sheet_folder, thumbnail_generator)
+            logger.info(f"Создано {thumbnails_created} миниатюр для папки: {sheet_folder}")
         
         logger.info(f"Лист '{sheet_name}': обработано {row_count} строк, найдено {copied_count}, не найдено {not_found_count}, множественные совпадения: {multiple_found_count}")
         
@@ -402,9 +457,9 @@ def DoFolder(source_folder, table, dest_folder):
                     f.write(f"Лист Excel: {item['sheet']}\n")
                     f.write(f"{'-'*50}\n")
             
-            logger.info(f"Создан общий отчет о не найденных файлах: {report_path}")
+            logger.info(f"Создан общий отчет о не найденных файлов: {report_path}")
         except Exception as e:
-            logger.error(f"Ошибка при сохранения общего отчета: {e}")
+            logger.error(f"Ошибка при сохранении общего отчета: {e}")
     else:
         logger.info("Все файлы успешно найдены. Отчет не требуется.")
     
@@ -478,10 +533,6 @@ def main():
         r"Unsorted\Pavlovsk\восстановление\восстановление_павловск_подписи.xlsx",
         r"Sorted\Pavlovsk\восстановление"
     )
-
-
-    
-
 
 if __name__ == "__main__":
     main()
