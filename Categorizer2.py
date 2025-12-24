@@ -76,6 +76,62 @@ def sanitize_folder_name(folder_name):
     
     return folder_name
 
+def ensure_descriptions_json_in_all_parents(folder_path, folder_name, subfolder_name=""):
+    """Обеспечивает наличие descriptions.json во всех родительских папках"""
+    # Начинаем с текущей папки и идем вверх до целевой директории
+    current_dir = folder_path
+    base_dir = os.path.dirname(folder_path) if subfolder_name else folder_path
+    
+    # Если есть подпапка, создаем JSON для родительской папки
+    if subfolder_name:
+        parent_dir = os.path.dirname(folder_path) if os.path.basename(folder_path) == subfolder_name[:25].strip(" .") else folder_path
+        
+        # Проверяем все уровни вверх
+        while current_dir != os.path.dirname(base_dir) and os.path.exists(current_dir):
+            json_path = os.path.join(current_dir, "descriptions.json")
+            
+            # Проверяем, существует ли уже JSON файл
+            if not os.path.exists(json_path):
+                # Создаем базовый JSON с title и subtitle
+                descriptions = {}
+                
+                # Определяем title для текущей папки
+                if current_dir == folder_path and subfolder_name:
+                    # Это подпапка
+                    descriptions["__title__"] = folder_name if folder_name != "Неизвестная папка" else ""
+                    descriptions["__subtitle__"] = subfolder_name if subfolder_name else ""
+                else:
+                    # Это родительская папка
+                    parent_folder_name = os.path.basename(current_dir)
+                    descriptions["__title__"] = parent_folder_name if parent_folder_name != "Неизвестная папка" else ""
+                    descriptions["__subtitle__"] = ""
+                
+                try:
+                    with open(json_path, 'w', encoding='utf-8') as f:
+                        json.dump(descriptions, f, ensure_ascii=False, indent=4)
+                    logger.info(f"Создан descriptions.json в родительской папке: {current_dir}")
+                    logger.info(f"Title: {descriptions['__title__']}, Subtitle: {descriptions['__subtitle__']}")
+                except Exception as e:
+                    logger.error(f"Ошибка при создании JSON в {current_dir}: {e}")
+            
+            # Поднимаемся на уровень выше
+            current_dir = os.path.dirname(current_dir)
+    else:
+        # Нет подпапки, просто создаем JSON в текущей папке если его нет
+        json_path = os.path.join(folder_path, "descriptions.json")
+        if not os.path.exists(json_path):
+            descriptions = {
+                "__title__": folder_name if folder_name != "Неизвестная папка" else "",
+                "__subtitle__": ""
+            }
+            try:
+                with open(json_path, 'w', encoding='utf-8') as f:
+                    json.dump(descriptions, f, ensure_ascii=False, indent=4)
+                logger.info(f"Создан descriptions.json в папке: {folder_path}")
+                logger.info(f"Title: {descriptions['__title__']}")
+            except Exception as e:
+                logger.error(f"Ошибка при создании JSON в {folder_path}: {e}")
+
 def get_all_files_recursive(folder_path):
     """Получает все файлы из папки и всех ее подпапок"""
     all_files = {}
@@ -189,14 +245,15 @@ def DoFolder(source_folder, table, dest_folder):
             sheet_folder = os.path.join(sheet_folder, subfolder_name[:25].strip(" ."))
         os.makedirs(sheet_folder, exist_ok=True)
 
+        # ОБЕСПЕЧИВАЕМ НАЛИЧИЕ descriptions.json ВО ВСЕХ РОДИТЕЛЬСКИХ ПАПКАХ
+        ensure_descriptions_json_in_all_parents(sheet_folder, folder_name, subfolder_name)
+
         # Создаем словарь для описаний
-        # Сохраняем старую структуру, но добавляем title и subtitle как первые ключи
         descriptions = {}
         title = folder_name
-        if(folder_name == "Неизвестная папка"):
+        if folder_name == "Неизвестная папка":
             title = ""
         
-
         descriptions["__title__"] = title 
         descriptions["__subtitle__"] = subfolder_name if subfolder_name else ""
 
@@ -256,7 +313,7 @@ def DoFolder(source_folder, table, dest_folder):
                     
                     shutil.copy2(matched_file_path, dest_path)
                     
-                    # Добавляем в словарь описаний (старая структура)
+                    # Добавляем в словарь описаний
                     descriptions[final_filename] = description.split("\n")[0]
                     copied_count += 1
                     
@@ -285,12 +342,17 @@ def DoFolder(source_folder, table, dest_folder):
         if sheet_not_found:
             not_found_reports.extend(sheet_not_found)
         
-        # Сохраняем descriptions.json
+        # ВСЕГДА сохраняем descriptions.json, даже если нет изображений
         json_path = os.path.join(sheet_folder, "descriptions.json")
         try:
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(descriptions, f, ensure_ascii=False, indent=4)
-            logger.info(f"Создан {json_path} с {len(descriptions) - 2} записями файлов")  # -2 потому что title и subtitle
+            
+            if copied_count > 0:
+                logger.info(f"Создан {json_path} с {len(descriptions) - 2} записями файлов")  # -2 потому что title и subtitle
+            else:
+                logger.info(f"Создан {json_path} только с title и subtitle (нет изображений)")
+            
             logger.info(f"Title: {descriptions['__title__']}, Subtitle: {descriptions['__subtitle__']}")
         except Exception as e:
             logger.error(f"Ошибка при сохранении JSON: {e}")
@@ -342,7 +404,7 @@ def DoFolder(source_folder, table, dest_folder):
             
             logger.info(f"Создан общий отчет о не найденных файлах: {report_path}")
         except Exception as e:
-            logger.error(f"Ошибка при сохранении общего отчета: {e}")
+            logger.error(f"Ошибка при сохранения общего отчета: {e}")
     else:
         logger.info("Все файлы успешно найдены. Отчет не требуется.")
     
