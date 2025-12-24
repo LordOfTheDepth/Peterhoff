@@ -29,3 +29,12 @@
   font-size: 60px;
   font-family: var(--font-heading);
 }
+
+@media (max-width: 767px)
+{
+    .overlay-text {
+
+  font-size: 32px;
+
+}
+}
