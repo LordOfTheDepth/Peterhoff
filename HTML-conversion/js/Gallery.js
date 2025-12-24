@@ -261,14 +261,14 @@
                     return;
                 }
                 
-                if (!entries || entries.length === 0) {
-                    container.innerHTML = `
-                        <div class="no-media">
-                          <p>Ошибка соединения. Изображения не найдены.</p>
-                        </div>
-                    `;
-                    return;
-                }
+                // if (!entries || entries.length === 0) {
+                //     container.innerHTML = `
+                //         <div class="no-media">
+                //           <p>Ошибка соединения. Изображения не найдены.</p>
+                //         </div>
+                //     `;
+                //     return;
+                // }
                 
                 let galleryHtml = "";
                 if(title && title !== "null") {
