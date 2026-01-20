@@ -220,42 +220,53 @@ def DoFolder(source_folder, table, dest_folder):
         ws = wb[sheet_name]
         
         # Получаем название папки из первой строки, второго столбца (столбец B)        
-        folder_name_cell = ws.cell(row=2, column=1).value
-        if folder_name_cell:
-            folder_name = str(folder_name_cell).strip()
-            folder_name = sanitize_folder_name(folder_name)
+        category_name_cell = ws.cell(row=2, column=1).value
+        if category_name_cell:
+            category_name = str(category_name_cell).strip()
+            category_name = sanitize_folder_name(category_name)
         else:
             logger.error(f"Не найдена ячейка с заголовком на листе: {sheet_name}")
-            folder_name = "Неизвестная папка"
-
+            category_name = "Неизвестная папка"
+        
         subfolder_name_cell = ws.cell(row=2, column=2).value
         if subfolder_name_cell:
-            subfolder_name = str(subfolder_name_cell).strip()
-            subfolder_name = sanitize_folder_name(subfolder_name)
+            subcategory_name = str(subfolder_name_cell).strip()
+            subcategory_name = sanitize_folder_name(subcategory_name)
         else:
-            subfolder_name = ""
+            subcategory_name = ""
 
+        folder_name = category_name
+        subfolder_name = subcategory_name[:25].strip(" .")
+        
         logger.info(f"Создаю папку: {folder_name}")
         if subfolder_name:
             logger.info(f"Подпапка: {subfolder_name}")
         
         # Создаем папку для листа
-        sheet_folder = os.path.join(dest_folder_fixed, folder_name)
+        folderPath = os.path.join(dest_folder_fixed, folder_name)
         if subfolder_name != "":
-            sheet_folder = os.path.join(sheet_folder, subfolder_name[:25].strip(" ."))
-        os.makedirs(sheet_folder, exist_ok=True)
+            
+            if(os.path.isdir(os.path.join(folderPath, subfolder_name))):
+                subfolderIndex = 1
+                while (os.path.isdir(os.path.join(folderPath, subfolder_name + str(subfolderIndex)))):
+                    subfolderIndex+=1
+                subfolder_name += str(subfolderIndex)
+        folderPath = os.path.join(folderPath, subfolder_name)
+        
+
+        os.makedirs(folderPath, exist_ok=True)
 
         # ОБЕСПЕЧИВАЕМ НАЛИЧИЕ descriptions.json ВО ВСЕХ РОДИТЕЛЬСКИХ ПАПКАХ
-        ensure_descriptions_json_in_all_parents(sheet_folder, folder_name, subfolder_name)
+        ensure_descriptions_json_in_all_parents(folderPath, category_name, subcategory_name)
 
         # Создаем словарь для описаний
         descriptions = {}
-        title = folder_name
-        if folder_name == "Неизвестная папка":
+        title = category_name
+        if category_name == "Неизвестная папка":
             title = ""
         
         descriptions["__title__"] = title 
-        descriptions["__subtitle__"] = subfolder_name if subfolder_name else ""
+        descriptions["__subtitle__"] = subcategory_name if subcategory_name else ""
 
         # Собираем статистику
         row_count = 0
@@ -293,7 +304,7 @@ def DoFolder(source_folder, table, dest_folder):
                 matched_filename = file_info['filename']
                 
                 # Копируем файл
-                dest_path = os.path.join(sheet_folder, matched_filename)
+                dest_path = os.path.join(folderPath, matched_filename)
                 
                 try:
                     # Проверяем, не существует ли уже файл
@@ -303,7 +314,7 @@ def DoFolder(source_folder, table, dest_folder):
                         counter = 1
                         while os.path.exists(dest_path):
                             new_filename = f"{base}_{counter}{ext}"
-                            dest_path = os.path.join(sheet_folder, new_filename)
+                            dest_path = os.path.join(folderPath, new_filename)
                             counter += 1
                         
                         final_filename = os.path.basename(dest_path)
@@ -314,10 +325,10 @@ def DoFolder(source_folder, table, dest_folder):
                     shutil.copy2(matched_file_path, dest_path)
                     
                     # Добавляем в словарь описаний
-                    descriptions[final_filename] = description.split("\n")[0]
+                    descriptions[final_filename] = description #description.split("\n")[0]
                     copied_count += 1
                     
-                    logger.debug(f"Скопирован: {file_info['rel_path']} -> {folder_name}/{final_filename}")
+                    logger.debug(f"Скопирован: {file_info['rel_path']} -> {category_name}/{final_filename}")
                 except Exception as e:
                     logger.error(f"Ошибка при копировании из {matched_file_path} в {dest_path}: {e}")
             else:
@@ -325,8 +336,8 @@ def DoFolder(source_folder, table, dest_folder):
                 
                 # Сохраняем информацию о не найденном файле
                 sheet_not_found.append({
-                    'title': folder_name,
-                    'subtitle': subfolder_name,
+                    'title': category_name,
+                    'subtitle': subcategory_name,
                     'name': image_name,
                     'sheet': sheet_name
                 })
@@ -343,7 +354,7 @@ def DoFolder(source_folder, table, dest_folder):
             not_found_reports.extend(sheet_not_found)
         
         # ВСЕГДА сохраняем descriptions.json, даже если нет изображений
-        json_path = os.path.join(sheet_folder, "descriptions.json")
+        json_path = os.path.join(folderPath, "descriptions.json")
         try:
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(descriptions, f, ensure_ascii=False, indent=4)
@@ -361,13 +372,13 @@ def DoFolder(source_folder, table, dest_folder):
         
         # Сохраняем отчет о не найденных файлах для этого листа в его папке
         if not_found_count > 0:
-            report_path = os.path.join(sheet_folder, "not_found_report.txt")
+            report_path = os.path.join(folderPath, "not_found_report.txt")
             try:
                 with open(report_path, 'w', encoding='utf-8') as f:
                     f.write(f"Отчет о не найденных файлах\n")
                     f.write(f"============================\n\n")
-                    f.write(f"Имя папки: {folder_name}\n")
-                    f.write(f"Имя подпапки: {subfolder_name if subfolder_name else '(нет)'}\n")
+                    f.write(f"Имя папки: {category_name}\n")
+                    f.write(f"Имя подпапки: {subcategory_name if subcategory_name else '(нет)'}\n")
                     f.write(f"Исходный лист: {sheet_name}\n")
                     f.write(f"Не найдено файлов: {not_found_count} из {row_count}\n\n")
                     f.write(f"Список не найденных файлов:\n")
@@ -419,7 +430,16 @@ def main():
     # Используем только относительные пути
     # Все пути будут автоматически преобразованы в абсолютные
     # относительно директории скрипта
-    
+    sortedPath = resolve_relative_path("Sorted")
+    if os.path.exists(sortedPath):
+        try:
+            shutil.rmtree(sortedPath)
+            print(f"Directory '{sortedPath}' and all its contents deleted.")
+        except OSError as error:
+            print(f"Error: {error}")
+    else:
+        print(f"Directory '{sortedPath}' not found.")
+
     DoFolder(
         r"Unsorted\Peterhof\до войны",
         r"Unsorted\Peterhof\до войны\петергоф_до войны_подписи.xlsx",
