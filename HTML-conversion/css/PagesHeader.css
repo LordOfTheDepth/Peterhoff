@@ -43,6 +43,16 @@
   height: 150px;
   overflow: hidden;
 }
-
+  .location-logo
+  {
+    top: 50px;
+    right: 50px;
+    position: absolute;
+  }
+  .location-logo *
+  {
+     max-height: 120px;
+     background-color: white;
+  }
 
 }
