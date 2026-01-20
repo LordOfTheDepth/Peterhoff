@@ -80,5 +80,5 @@ if(locationId = 3)
 }
 if(textURL != "")
 {
-  insertHtml("main-text-container", textURL)
+  createElement("main-text-container", textURL)
 }
