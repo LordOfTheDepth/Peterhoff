@@ -223,7 +223,7 @@ def convert_docx_in_source_folder(source_folder, target_folder):
                     html_path = convert_file_to_html(docx_path)
                     
                     # Получаем имя файла для копирования в целевую папку
-                    html_filename = os.path.basename(html_path)
+                    html_filename = "text.html" #os.path.basename(html_path)
                     target_html_path = os.path.join(target_folder, html_filename)
                     
                     # Копируем сгенерированный html в целевую папку
