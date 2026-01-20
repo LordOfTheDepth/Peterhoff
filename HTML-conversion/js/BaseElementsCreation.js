@@ -5,7 +5,7 @@ function createBaseElements(headerTitle, headerImageUrl, button1, button2, butto
   createElement("background","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Background.html")
   
   createElement("header","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/PeterhofHeader.html").then(() => {insertHtml("page-title",headerTitle)}).then(() => 
-{
+  {
   insertHtml("page-title-img", `<img src = ${headerImageUrl}> </img>`) 
   logoUrl = ""
   if(locationId == 1)
@@ -21,7 +21,7 @@ function createBaseElements(headerTitle, headerImageUrl, button1, button2, butto
     insertHtml("location-logo", `<img src = ${logoUrl}> </img>`)
   }
     
-});
+  });
   createElement("buttons","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/PeterhofButtons.html?refresh=1")
   .then(() => {insertHtml("button1",`<a href="https://spbarchives.ru/${button1}">До войны</a>`)})
   .then(() => {insertHtml("button2",`<a href="https://spbarchives.ru/${button2}">Разрушение</a>`)})
@@ -29,10 +29,7 @@ function createBaseElements(headerTitle, headerImageUrl, button1, button2, butto
 
   createElement("footer-container","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Footer.html?refresh=1")
 
-
-}
-
-textURL = ""
+  textURL = ""
 if(locationId = 1)
 {
   if(stageId = 1)
@@ -82,3 +79,5 @@ if(textURL != "")
 {
   createElement("main-text-container", textURL)
 }
+}
+
