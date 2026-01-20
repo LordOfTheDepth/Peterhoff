@@ -205,7 +205,7 @@ if __name__ == "__main__":
     else:
         # Автоматическая конвертация указанного файла
         try:
-            result_path = convert_file_to_html(r"F:\MiscProjects\Peterhoff\Тексты\Павловск\1. Павловск до войны.docx")
+            result_path = convert_file_to_html(r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Тексты\1. Вводный текст_на главную страницу.docx")
             print(f"Файл успешно конвертирован: {result_path}")
         except Exception as e:
             print(f"Ошибка при конвертации: {e}")

@@ -29,6 +29,8 @@ function createBaseElements(headerTitle, headerImageUrl, button1, button2, butto
 
   createElement("footer-container","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Footer.html?refresh=1")
 
+  restoration = "%D0%B2%D0%BE%D1%81%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5"
+
   textURL = ""
 if(locationId = 1)
 {
@@ -72,7 +74,7 @@ if(locationId = 3)
   }
   if(stageId = 3)
   {
-     textURL = "https://github.com/LordOfTheDepth/Peterhoff/blob/main/Sorted/Pavlovsk/восстановление/text.html"
+     textURL = `https://lordofthedepth.github.io/Peterhoff/Sorted/Pavlovsk/${restoration}/text.html`
   }
 }
 if(textURL != "")
