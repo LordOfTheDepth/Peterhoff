@@ -474,63 +474,72 @@ def main():
     # Используем только относительные пути
     # Все пути будут автоматически преобразованы в абсолютные
     # относительно директории скрипта
-    
+    sortedPath = resolve_relative_path("Sorted")
+    if os.path.exists(sortedPath):
+        try:
+            shutil.rmtree(sortedPath)
+            print(f"Directory '{sortedPath}' and all its contents deleted.")
+        except OSError as error:
+            print(f"Error: {error}")
+    else:
+        print(f"Directory '{sortedPath}' not found.")
+
     DoFolder(
         r"Unsorted\Peterhof\до войны",
-        r"Unsorted\Peterhof\до войны\!до_войны_подписи_текст4.xlsx",
+        r"Unsorted\Peterhof\до войны\петергоф_до войны_подписи.xlsx",
         r"Sorted\Peterhof\до войны"
     )
     logger.debug(f"##################################################################################################################")
 
     DoFolder(
         r"Unsorted\Peterhof\разрушения",
-        r"Unsorted\Peterhof\разрушения\!разрушения_подписи_текст4.xlsx",
+        r"Unsorted\Peterhof\разрушения\петергоф_разр_подписи.xlsx",
         r"Sorted\Peterhof\разрушения"
     )
     logger.debug(f"##################################################################################################################")
     
     DoFolder(
         r"Unsorted\Peterhof\восстановление",
-        r"Unsorted\Peterhof\восстановление\!восстановление_подписи_текст4.xlsx",
+        r"Unsorted\Peterhof\восстановление\петергоф_восст_подписи.xlsx",
         r"Sorted\Peterhof\восстановление"
     )
 
 #Pushkin
     DoFolder(
         r"Unsorted\Pushkin\до войны",
-        r"Unsorted\Pushkin\до войны\до войны_подписи_пушкин.xlsx",
+        r"Unsorted\Pushkin\до войны\пушкин_до войны_подпси.xlsx",
         r"Sorted\Pushkin\до войны"
     )
     logger.debug(f"##################################################################################################################")
 
     DoFolder(
         r"Unsorted\Pushkin\разрушения",
-        r"Unsorted\Pushkin\разрушения\разрушения_подписи_пушкин.xlsx",
+        r"Unsorted\Pushkin\разрушения\пушкин_разр_подписи.xlsx",
         r"Sorted\Pushkin\разрушения"
     )
     logger.debug(f"##################################################################################################################")
     DoFolder(
         r"Unsorted\Pushkin\восстановление",
-        r"Unsorted\Pushkin\восстановление\восстановление_подписи_пушкин.xlsx",
+        r"Unsorted\Pushkin\восстановление\пушкин_восст_подписи.xlsx",
         r"Sorted\Pushkin\восстановление"
     )
 #Pavlovsk
     DoFolder(
         r"Unsorted\Pavlovsk\до войны",
-        r"Unsorted\Pavlovsk\до войны\до войны_павловск_подписи.xlsx",
+        r"Unsorted\Pavlovsk\до войны\павловск_до войны_подписи.xlsx",
         r"Sorted\Pavlovsk\до войны"
     )
     logger.debug(f"##################################################################################################################")
 
     DoFolder(
         r"Unsorted\Pavlovsk\разрушения",
-        r"Unsorted\Pavlovsk\разрушения\разрушение_павловск_подписи.xlsx",
+        r"Unsorted\Pavlovsk\разрушения\павловск_разрушение_подписи.xlsx",
         r"Sorted\Pavlovsk\разрушения"
     )
     logger.debug(f"##################################################################################################################")
     DoFolder(
         r"Unsorted\Pavlovsk\восстановление",
-        r"Unsorted\Pavlovsk\восстановление\восстановление_павловск_подписи.xlsx",
+        r"Unsorted\Pavlovsk\восстановление\павловск_восст_подписи.xlsx",
         r"Sorted\Pavlovsk\восстановление"
     )
 
