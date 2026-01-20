@@ -72,7 +72,7 @@ if(locationId = 3)
   }
   if(stageId = 3)
   {
-    textURL = "https://github.com/LordOfTheDepth/Peterhoff/blob/main/Sorted/Pavlovsk/восстановление/text.html"
+    // textURL = "https://github.com/LordOfTheDepth/Peterhoff/blob/main/Sorted/Pavlovsk/восстановление/text.html"
   }
 }
 if(textURL != "")
