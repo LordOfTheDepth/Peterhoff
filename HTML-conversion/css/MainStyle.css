@@ -1,10 +1,10 @@
 
-@import url(https://lordofthedepth.github.io/Peterhoff/HTML-conversion/css/MainButtons.css);
-@import url(https://lordofthedepth.github.io/Peterhoff/HTML-conversion/css/Footer.css);
-@import url(https://lordofthedepth.github.io/Peterhoff/HTML-conversion/css/MainHeader.css);
-@import url(https://lordofthedepth.github.io/Peterhoff/HTML-conversion/css/PagesHeader.css);
-@import url(https://lordofthedepth.github.io/Peterhoff/HTML-conversion/css/PeterhoffText.css);
-@import url(https://lordofthedepth.github.io/Peterhoff/HTML-conversion/css/Gallery.css);
+@import url(https://cdn.jsdelivr.net/gh/LordOfTheDepth/Peterhoff@LocalPathesFix/MainButtons.css);
+@import url(https://cdn.jsdelivr.net/gh/LordOfTheDepth/Peterhoff@LocalPathesFix/Footer.css);
+@import url(https://cdn.jsdelivr.net/gh/LordOfTheDepth/Peterhoff@LocalPathesFix/MainHeader.css);
+@import url(https://cdn.jsdelivr.net/gh/LordOfTheDepth/Peterhoff@LocalPathesFix/PagesHeader.css);
+@import url(https://cdn.jsdelivr.net/gh/LordOfTheDepth/Peterhoff@LocalPathesFix/PeterhoffText.css);
+@import url(https://cdn.jsdelivr.net/gh/LordOfTheDepth/Peterhoff@LocalPathesFix/Gallery.css);
 
 /* http://meyerweb.com/eric/tools/css/reset/ 
    v2.0 | 20110126
@@ -14,7 +14,6 @@
 
 
 :root {
-
     --primary-color: #4361ee;
     --secondary-color: #3f37c9;
     --accent-color: #4cc9f0;
@@ -93,7 +92,7 @@
 .pavlovsk *
 {
     --darkBKG: #4f463a;
-    --lightBKG: #e49f66;
+    --lightBKG: #c58856;
     --brightBKG: #e99862;
     --dullBKG: #96786a;
     --gradient-bkg: linear-gradient(rgb(221, 217, 212) 0%, #b2c9bf 20%, #b2c9bf 80%, rgb(226, 223, 216) 100%);
@@ -101,8 +100,8 @@
 .pushkin *
 {
     --darkBKG: #3a3e4f;
-    --lightBKG: #c6e4e4;
-    --brightBKG: #7dc0db;
+    --lightBKG: #99b1b1;
+    --brightBKG: #62c3e9;
     --dullBKG: #6a8696;
     --gradient-bkg: linear-gradient(rgb(221, 217, 212) 0%, #bcb2c9 20%, #bcb2c9 80%, rgb(226, 223, 216) 100%);
 }
@@ -176,49 +175,4 @@
 
 .nobr {
   white-space: nowrap;
-}
-
-
-
-/* Фикс лайфрей интерфейса */
-.portlet {
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-}
-
-.portlet-title {
-    display: none !important;
-}
-
-.portlet-content {
-    padding: 0 !important;
-    border: none !important;
-    background: transparent !important;
-}
-
-/* Убираем стандартные отступы Liferay */
-.portlet-body {
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* Для вашего контейнера */
-.root-container {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-}
-
-/* Убираем рамки и фон */
-.portlet-borderless-container {
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-}
-
-.portlet-header {
-    display: none !important;
 }
