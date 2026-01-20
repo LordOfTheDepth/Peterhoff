@@ -225,6 +225,7 @@ def DoFolder(source_folder, table, dest_folder):
             format='JPEG'
         )
     else:
+        logger.error("Генератор миниатюр недоступен")
         thumbnail_generator = None
     
     # Создаем список для сбора информации о не найденных файлах

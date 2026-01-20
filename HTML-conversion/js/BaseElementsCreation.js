@@ -10,11 +10,11 @@ function createBaseElements(headerTitle, headerImageUrl, button1, button2, butto
   logoUrl = ""
   if(headerTitle.includes("Петергоф"))
   {
-
+      logoUrl ="https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/Log_PetergofAsset%201@4x.png?raw=true"
   }
   if(headerTitle.includes("Пушкин"))
   {
-      
+      logoUrl = "https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/%D0%A6%D0%B0%D1%80%D1%81%D0%BA%D0%BE%D0%B5%20%D1%81%D0%B5%D0%BB%D0%BE.png?raw=true"
   }
   if(logoUrl != "")
   {
