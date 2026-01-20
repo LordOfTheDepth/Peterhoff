@@ -75,7 +75,7 @@ if(locationId = 3)
   }
   if(stageId = 3)
   {
-    textURL = "https://github.com/LordOfTheDepth/Peterhoff/blob/main/Sorted/Pavlovsk/%D0%B2%D0%BE%D1%81%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5/text.html"
+    textURL = "https://github.com/LordOfTheDepth/Peterhoff/blob/main/Sorted/Pavlovsk/восстановление/text.html"
   }
 }
 if(textURL != "")

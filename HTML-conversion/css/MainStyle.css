@@ -14,6 +14,7 @@
 
 
 :root {
+
     --primary-color: #4361ee;
     --secondary-color: #3f37c9;
     --accent-color: #4cc9f0;
@@ -92,7 +93,7 @@
 .pavlovsk *
 {
     --darkBKG: #4f463a;
-    --lightBKG: #c58856;
+    --lightBKG: #e49f66;
     --brightBKG: #e99862;
     --dullBKG: #96786a;
     --gradient-bkg: linear-gradient(rgb(221, 217, 212) 0%, #b2c9bf 20%, #b2c9bf 80%, rgb(226, 223, 216) 100%);
@@ -100,8 +101,8 @@
 .pushkin *
 {
     --darkBKG: #3a3e4f;
-    --lightBKG: #99b1b1;
-    --brightBKG: #62c3e9;
+    --lightBKG: #c6e4e4;
+    --brightBKG: #7dc0db;
     --dullBKG: #6a8696;
     --gradient-bkg: linear-gradient(rgb(221, 217, 212) 0%, #bcb2c9 20%, #bcb2c9 80%, rgb(226, 223, 216) 100%);
 }
@@ -175,4 +176,49 @@
 
 .nobr {
   white-space: nowrap;
+}
+
+
+
+/* Фикс лайфрей интерфейса */
+.portlet {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.portlet-title {
+    display: none !important;
+}
+
+.portlet-content {
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+/* Убираем стандартные отступы Liferay */
+.portlet-body {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Для вашего контейнера */
+.root-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+
+/* Убираем рамки и фон */
+.portlet-borderless-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+.portlet-header {
+    display: none !important;
 }
