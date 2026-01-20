@@ -1,5 +1,5 @@
 
-function createBaseElements(headerTitle, headerImageUrl, button1, button2, button3)
+function createBaseElements(headerTitle, headerImageUrl, button1, button2, button3, locationId, stageId)
 {
     
   createElement("background","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Background.html")
@@ -8,11 +8,11 @@ function createBaseElements(headerTitle, headerImageUrl, button1, button2, butto
 {
   insertHtml("page-title-img", `<img src = ${headerImageUrl}> </img>`) 
   logoUrl = ""
-  if(headerTitle.includes("Петергоф"))
+  if(locationId == 1)
   {
       logoUrl ="https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/Log_PetergofAsset%201@4x.png?raw=true"
   }
-  if(headerTitle.includes("Пушкин"))
+  if(locationId == 2)
   {
       logoUrl = "https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/%D0%A6%D0%B0%D1%80%D1%81%D0%BA%D0%BE%D0%B5%20%D1%81%D0%B5%D0%BB%D0%BE.png?raw=true"
   }
@@ -30,4 +30,55 @@ function createBaseElements(headerTitle, headerImageUrl, button1, button2, butto
   createElement("footer-container","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Footer.html?refresh=1")
 
 
+}
+
+textURL = ""
+if(locationId = 1)
+{
+  if(stageId = 1)
+  {
+
+  }
+  if(stageId = 2)
+  {
+    
+  }
+  if(stageId = 3)
+  {
+    
+  }
+}
+if(locationId = 2)
+{
+  if(stageId = 1)
+  {
+
+  }
+  if(stageId = 2)
+  {
+    
+  }
+  if(stageId = 3)
+  {
+    
+  }
+}
+if(locationId = 3)
+{
+  if(stageId = 1)
+  {
+
+  }
+  if(stageId = 2)
+  {
+    
+  }
+  if(stageId = 3)
+  {
+    textURL = "https://github.com/LordOfTheDepth/Peterhoff/blob/main/Sorted/Pavlovsk/%D0%B2%D0%BE%D1%81%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5/text.html"
+  }
+}
+if(textURL != "")
+{
+  insertHtml("main-text-container", textURL)
 }
