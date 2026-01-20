@@ -39,10 +39,35 @@
   top: 50px;
   right: 50px;
   position: absolute;
+  gap: 25px;
 
 }
 .main-header-logos-container *
 {
-  max-height: 120px;
+  max-height: 100px;
 
+}
+@media (max-width: 1199px)
+{
+    .main-header-logos-container *
+{
+  max-height: 100px;
+
+}
+}
+@media (max-width: 991px)
+{
+   .main-header-logos-container *
+{
+  max-height: 50px;
+
+}
+}
+@media (max-width: 767px)
+{
+    .main-header-logos-container *
+{
+  max-height: 50px;
+
+}
 }
