@@ -17,6 +17,16 @@ except ImportError as e:
     logger.warning(f"Не удалось импортировать ThumbnailGenerator: {e}")
     logger.warning("Миниатюры создаваться не будут")
 
+# Импортируем конвертер docx в html
+try:
+    from DocxConverter import convert_file_to_html
+    DOCX_CONVERTER_AVAILABLE = True
+    logger.info("DocxConverter успешно импортирован")
+except ImportError as e:
+    DOCX_CONVERTER_AVAILABLE = False
+    logger.warning(f"Не удалось импортировать DocxConverter: {e}")
+    logger.warning("Конвертация docx файлов не будет выполняться")
+
 # ========== НАСТРОЙКИ ==========
 THUMBNAIL_SIZE = (300, 300)  # Максимальный размер миниатюры
 THUMBNAIL_QUALITY = 85       # Качество миниатюр (1-100)
@@ -176,6 +186,65 @@ def create_thumbnails_for_folder(folder_path, thumbnail_generator):
     
     return created_count
 
+def convert_docx_in_source_folder(source_folder, target_folder):
+    """
+    Ищет и конвертирует docx файлы из исходной папки в целевую папку
+    
+    Args:
+        source_folder (str): Путь к исходной папке
+        target_folder (str): Путь к целевой папке
+    
+    Returns:
+        int: Количество сконвертированных файлов
+    """
+    if not DOCX_CONVERTER_AVAILABLE:
+        logger.warning("Конвертер docx недоступен, пропускаем конвертацию docx файлов")
+        return 0
+    
+    converted_count = 0
+    
+    try:
+        # Проверяем существование исходной папки
+        if not os.path.exists(source_folder):
+            logger.warning(f"Исходная папка не найдена: {source_folder}")
+            return 0
+        
+        # Создаем целевую папку, если ее нет
+        os.makedirs(target_folder, exist_ok=True)
+        
+        # Ищем все docx файлы в исходной папке
+        for filename in os.listdir(source_folder):
+            if filename.lower().endswith('.docx'):
+                docx_path = os.path.join(source_folder, filename)
+                
+                try:
+                    # Конвертируем docx в html
+                    logger.info(f"Найден docx файл: {filename}, конвертируем...")
+                    html_path = convert_file_to_html(docx_path)
+                    
+                    # Получаем имя файла для копирования в целевую папку
+                    html_filename = os.path.basename(html_path)
+                    target_html_path = os.path.join(target_folder, html_filename)
+                    
+                    # Копируем сгенерированный html в целевую папку
+                    shutil.copy2(html_path, target_html_path)
+                    
+                    converted_count += 1
+                    logger.info(f"Успешно сконвертирован и скопирован: {filename} -> {html_filename}")
+                    
+                except Exception as e:
+                    logger.error(f"Ошибка при конвертации файла {filename}: {e}")
+        
+        if converted_count > 0:
+            logger.info(f"Сконвертировано {converted_count} docx файлов в папке: {target_folder}")
+        else:
+            logger.info(f"Docx файлы не найдены в папке: {source_folder}")
+            
+    except Exception as e:
+        logger.error(f"Ошибка при поиске docx файлов в папке {source_folder}: {e}")
+    
+    return converted_count
+
 def get_all_files_recursive(folder_path):
     """Получает все файлы из папки и всех ее подпапок"""
     all_files = {}
@@ -216,6 +285,10 @@ def DoFolder(source_folder, table, dest_folder):
     
     # Создаем конечную папку, если ее нет
     os.makedirs(dest_folder_fixed, exist_ok=True)
+    
+    # КОНВЕРТИРУЕМ DOCX ФАЙЛЫ ИЗ ИСХОДНОЙ ПАПКИ
+    logger.info(f"Поиск docx файлов в исходной папке...")
+    convert_docx_in_source_folder(source_folder_fixed, dest_folder_fixed)
     
     # Создаем генератор миниатюр
     if THUMBNAIL_GENERATOR_AVAILABLE:
@@ -276,7 +349,7 @@ def DoFolder(source_folder, table, dest_folder):
             folder_name = str(folder_name_cell).strip()
             folder_name = sanitize_folder_name(folder_name)
         else:
-            logger.error(f"Не найдена ячейка с заголовком на листе: {sheet_name}")
+            logger.error(f"Не найдена ячейка с заголовком на листа: {sheet_name}")
             folder_name = "Неизвестная папка"
 
         subfolder_name_cell = ws.cell(row=2, column=2).value
@@ -458,7 +531,7 @@ def DoFolder(source_folder, table, dest_folder):
                     f.write(f"Лист Excel: {item['sheet']}\n")
                     f.write(f"{'-'*50}\n")
             
-            logger.info(f"Создан общий отчет о не найденных файлов: {report_path}")
+            logger.info(f"Создан общий отчет о не найденных файлах: {report_path}")
         except Exception as e:
             logger.error(f"Ошибка при сохранении общего отчета: {e}")
     else:
