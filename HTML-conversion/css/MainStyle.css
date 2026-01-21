@@ -29,7 +29,7 @@
     --brightBKG: #e9b162;
     --dullBKG: #96836a;
     --main-bkg-color: #bac9b2;
-
+    --galleryBKG: #f1cd97;
     --font-heading: 'Merriweather', serif;
     --font-subheading: 'PT Sans', sans-serif;
     --font-body: 'PT Sans', sans-serif;
@@ -87,6 +87,7 @@
     --darkBKG: #4F4F3A;
     --lightBKG: #fdce88;
     --brightBKG: #e9b162;
+    --galleryBKG: #fdce8879;
     --dullBKG: #96836a;
     --gradient-bkg: linear-gradient(rgb(214, 221, 212) 0%, #bac9b2 20%, #bac9b2 80%, rgb(216, 226, 219) 100%);
 }
@@ -95,6 +96,7 @@
     --darkBKG: #4f463a;
     --lightBKG: #e49f66;
     --brightBKG: #e99862;
+    --galleryBKG: #e49f667c;
     --dullBKG: #96786a;
     --gradient-bkg: linear-gradient(rgb(221, 217, 212) 0%, #b2c9bf 20%, #b2c9bf 80%, rgb(226, 223, 216) 100%);
 }
@@ -103,6 +105,7 @@
     --darkBKG: #3a3e4f;
     --lightBKG: #c6e4e4;
     --brightBKG: #7dc0db;
+    --galleryBKG: #c6e4e481;
     --dullBKG: #6a8696;
     --gradient-bkg: linear-gradient(rgb(221, 217, 212) 0%, #bcb2c9 20%, #bcb2c9 80%, rgb(226, 223, 216) 100%);
 }
