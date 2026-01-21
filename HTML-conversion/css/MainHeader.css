@@ -45,6 +45,7 @@
 .main-header-logos-container *
 {
   max-height: 100px;
+  min-width: 300px;
 
 }
 @media (max-width: 1199px)
