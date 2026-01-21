@@ -28,6 +28,7 @@
   
 }
 .main-header-overlay-text-low {
+  margin-top: 10px;
   background-color: var(--lifgtBKG);
   color: var(--darkBKG);
   font-weight: bold;
@@ -67,6 +68,10 @@
 
 @media (max-width: 1199px)
 {
+  .main-header-overlay-text {
+    top: 200px;
+  
+  }
   .main-header-logos-container
   {
     top: 20px;
