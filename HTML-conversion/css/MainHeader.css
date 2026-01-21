@@ -48,26 +48,53 @@
   
 
 }
+.logo-cgantd
+{
+
+}
+.logo-peterhof
+{
+  max-width: 140px;
+}
+.logo-pushkin
+{
+  min-height: 120px;
+}
+.logo-gov
+{
+
+}
+
 @media (max-width: 1199px)
 {
-    .main-header-logos-container *
-{
-  max-height: 100px;
-}
+  .main-header-logos-container
+  {
+    top: 20px;
+    right: 20px;
+  }
+  .logo-pushkin
+  {
+    min-height: 80px;
+  }
+  .main-header-logos-container *
+  {
+    max-height: 70px;
+  }
 }
 @media (max-width: 991px)
 {
-   .main-header-logos-container *
-{
-  max-height: 50px;
+    .main-header-logos-container
+  {
+    top: 20px;
+    right: 20px;
+  }
+  .main-header-logos-container *
+  {
+    max-height: 50px;
+  }
+  .logo-pushkin
+  {
+    min-height: 55px;
+  }
+}
 
-}
-}
-@media (max-width: 767px)
-{
-    .main-header-logos-container *
-{
-  max-height: 50px;
-
-}
-}
