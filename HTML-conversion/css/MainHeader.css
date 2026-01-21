@@ -39,13 +39,13 @@
   top: 50px;
   right: 50px;
   position: absolute;
-  gap: 25px;
+  gap: 100px;
 
 }
 .main-header-logos-container *
 {
   max-height: 100px;
-  min-width: 300px;
+  
 
 }
 @media (max-width: 1199px)
@@ -53,7 +53,6 @@
     .main-header-logos-container *
 {
   max-height: 100px;
-
 }
 }
 @media (max-width: 991px)
