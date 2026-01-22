@@ -42,5 +42,114 @@ textURL = `https://lordofthedepth.github.io/Peterhoff/Sorted/${locations[locatio
 
 createElement("main-text-container", textURL)
 
+const initialUrl = "https://lordofthedepth.github.io/Peterhoff/SortedMap/Peterhof/разрушения";
+initAllGalleries(initialUrl)
+
+
+const GALLERIES_CONTAINER_ID = 'galleries-container';
+    
+
+// Функция для загрузки map.json напрямую
+async function loadMapJSON() {
+    try {
+        // Парсим URL
+        const urlParts = initialUrl.split('/');
+        const GITHUB_REPO = `${urlParts[3]}/${urlParts[4]}`;
+        const GITHUB_BRANCH = urlParts[6];
+        const GITHUB_FOLDER = urlParts.slice(7).join('/');
+        
+        const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
+        const mapJsonUrl = `${initialUrl}/map.json`;
+        
+        console.log(`Загружаем map.json: ${mapJsonUrl}`);
+        
+        const response = await fetch(mapJsonUrl);
+        
+        if (!response.ok) {
+            throw new Error(`Ошибка загрузки map.json: ${response.status} ${response.statusText}`);
+        }
+        
+        const jsonData = await response.json();
+        console.log('✅ map.json загружен');
+        return jsonData;
+    } catch (error) {
+        console.error('❌ Ошибка при загрузке map.json:', error);
+        throw error;
+    }
 }
 
+// Функция для создания контейнеров галерей
+function createGalleryContainers(folderNames) {
+    const container = document.getElementById(GALLERIES_CONTAINER_ID);
+    
+    if (!container) {
+        console.error(`❌ Контейнер с id="${GALLERIES_CONTAINER_ID}" не найден`);
+        return;
+    }
+    
+    folderNames.forEach((folderName, index) => {
+        // Создаем уникальный ID для галереи
+        const galleryId = `gallery-${folderName.replace(/\s+/g, '-').toLowerCase()}-${index}`;
+        
+        // Создаем контейнер для галереи
+        const galleryContainer = document.createElement('div');
+        galleryContainer.id = galleryId;
+        galleryContainer.className = 'gallery-container';
+        
+        container.appendChild(galleryContainer);
+    });
+}
+
+// Функция для инициализации всех галерей
+async function initAllGalleries(initialUrl) {
+    try {
+        console.log('🚀 Начинаю инициализацию всех галерей...');
+        
+        // Загружаем map.json
+        const mapData = await loadMapJSON();
+        
+        if (!mapData || !mapData.folders) {
+            console.warn('❌ В map.json нет папок или файл пустой');
+            return;
+        }
+        
+        // Получаем список названий папок
+        const folderNames = Object.keys(mapData.folders);
+        
+        if (folderNames.length === 0) {
+            console.warn('❌ В map.json не найдено папок');
+            return;
+        }
+        
+        console.log(`📁 Найдено ${folderNames.length} папок:`, folderNames);
+        
+        // Создаем контейнеры для галерей
+        createGalleryContainers(folderNames);
+        
+        // Инициализируем галереи для каждой папки
+        folderNames.forEach((folderName, index) => {
+            const galleryId = `gallery-${folderName.replace(/\s+/g, '-').toLowerCase()}-${index}`;
+            
+            console.log(`🖼️ Создаю галерею для папки: "${folderName}" (ID: ${galleryId})`);
+            
+            // Создаем галерею с помощью createGallery
+            window.createGallery(galleryId, folderName, initialUrl);
+        });
+        
+        console.log('✅ Все галереи инициализированы');
+        
+    } catch (error) {
+        console.error('❌ Ошибка при инициализации галерей:', error);
+        
+        const container = document.getElementById(GALLERIES_CONTAINER_ID);
+        if (container) {
+            container.innerHTML = `
+                <div class="error-message">
+                    <h3>Ошибка загрузки галерей</h3>
+                    <p>${error.message}</p>
+                </div>
+            `;
+        }
+    }
+}
+}

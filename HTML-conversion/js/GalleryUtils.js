@@ -4,6 +4,28 @@
     
     const GalleryUtils = {
         
+                // GalleryUtils.js - добавьте эту функцию
+        formatTextWithLineBreaks: function(text, useHtmlBreaks = true) {
+            if (!text) return '';
+            
+            const escaped = this.escapeHtml(text);
+            
+            if (useHtmlBreaks) {
+                // Заменяем \n на <br> для HTML отображения
+                return escaped.replace(/\n/g, '<br>');
+            } else {
+                // Возвращаем как есть, но с CSS свойством white-space: pre-line
+                return escaped;
+            }
+        },
+
+        // Для атрибутов (data-caption, title и т.д.)
+        formatTextForAttribute: function(text) {
+            if (!text) return '';
+            // Для атрибутов можно заменить \n на что-то читаемое
+            return this.escapeHtmlAttribute(text.replace(/\n/g, ' | '));
+        },
+
         // Экранирование HTML для текста
         escapeHtml: function(text) {
             if (!text) return '';

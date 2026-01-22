@@ -18,6 +18,18 @@ function createElement(id, link)
                 } else {
                     reject(new Error(`Элемент с id "${id}" не найден после вставки`));
                 }
+                const scripts = element.querySelectorAll('script');
+                scripts.forEach(script => {
+                const newScript = document.createElement('script');
+                newScript.textContent = script.textContent;
+                
+                // Копируем атрибуты
+                Array.from(script.attributes).forEach(attr => {
+                    newScript.setAttribute(attr.name, attr.value);
+                });
+                
+                script.parentNode.replaceChild(newScript, script);
+        });
             })
             .catch(error => {
                 console.error(`Ошибка загрузки элемента ${id}:`, error);
