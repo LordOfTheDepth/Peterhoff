@@ -12,52 +12,6 @@ import CategorizerUtills
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def ensure_descriptions_json_in_all_parents(folder_path, folder_name, subfolder_name=""):
-    """Обеспечивает наличие descriptions.json во всех родительских папках"""
-    # Начинаем с текущей папки и идем вверх до целевой директории
-    current_dir = folder_path
-    
-    # Проверяем все уровни вверх
-    while current_dir and os.path.exists(current_dir):
-        json_path = os.path.join(current_dir, "descriptions.json")
-        
-        # Проверяем, существует ли уже JSON файл
-        if not os.path.exists(json_path):
-            # Создаем базовый JSON с title и subtitle
-            descriptions = {}
-            
-            # Определяем title для текущей папки
-            current_folder_name = os.path.basename(current_dir)
-            
-            if current_dir == folder_path:
-                # Это целевая папка (подпапка или основная)
-                if subfolder_name and os.path.basename(current_dir) == subfolder_name[:25].strip(" ."):
-                    # Это подпапка
-                    descriptions["__title__"] = folder_name if folder_name != "Неизвестная папка" else ""
-                    descriptions["__subtitle__"] = subfolder_name if subfolder_name else ""
-                else:
-                    # Это основная папка
-                    descriptions["__title__"] = folder_name if folder_name != "Неизвестная папка" else ""
-                    descriptions["__subtitle__"] = ""
-            else:
-                # Это родительская папка
-                descriptions["__title__"] = current_folder_name if current_folder_name != "Неизвестная папка" else ""
-                descriptions["__subtitle__"] = ""
-            
-            try:
-                with open(json_path, 'w', encoding='utf-8') as f:
-                    json.dump(descriptions, f, ensure_ascii=False, indent=4)
-                logger.info(f"Создан descriptions.json в папке: {current_dir}")
-                logger.info(f"Title: {descriptions['__title__']}, Subtitle: {descriptions['__subtitle__']}")
-            except Exception as e:
-                logger.error(f"Ошибка при создании JSON в {current_dir}: {e}")
-        
-        # Поднимаемся на уровень выше
-        parent_dir = os.path.dirname(current_dir)
-        if parent_dir == current_dir:  # Достигли корня
-            break
-        current_dir = parent_dir
-
 def create_thumbnails_for_folder(folder_path, thumbnail_generator):
     """
     Создает миниатюры для всех изображений в указанной папке

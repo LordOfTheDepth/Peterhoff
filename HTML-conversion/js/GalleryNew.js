@@ -2,7 +2,7 @@
     'use strict';
     
     // ФУНКЦИЯ для создания галереи с параметрами
-    function createGallery(GALLERY_ID, title, subtitle, folder, subfolder, githubFolderUrl) {
+    function createGallery(GALLERY_ID, folder, githubFolderUrl) {
         let token1 = "pat_"
         let token2 = "11ASO6L4Y0ohnzEd8NtYHe_XQuxbUyEXroUsSzZ8r9AA"
         let token3 = "LcjLiu5IUX260bb5bUjSQHCNC2EXYJ0vWDcm1m"
@@ -125,8 +125,27 @@
                 }
             }
             
-            // Функция для получения списка файлов из карты
-            function getFilesFromMap(mapData, folderName, subfolderName) {
+            // Функция для получения файлов из основной папки
+            function getFilesFromMainFolder(mapData, folderName) {
+                try {
+                    if (!mapData.folders || !mapData.folders[folderName]) {
+                        console.log(`Папка "${folderName}" не найдена в map.json`);
+                        return [];
+                    }
+                    
+                    const folderData = mapData.folders[folderName];
+                    const files = folderData.files || [];
+                    
+                    console.log(`Найдено ${files.length} файлов в основной папке "${folderName}"`);
+                    return files;
+                } catch (error) {
+                    console.log('Ошибка при получении файлов из основной папки:', error.message);
+                    return [];
+                }
+            }
+            
+            // Функция для получения всех документов из подпапок
+            function getAllDocumentsFromSubfolders(mapData, folderName) {
                 try {
                     if (!mapData.folders || !mapData.folders[folderName]) {
                         console.log(`Папка "${folderName}" не найдена в map.json`);
@@ -135,24 +154,32 @@
                     
                     const folderData = mapData.folders[folderName];
                     
-                    let files = [];
+                    // Получаем все подпапки
+                    const subfolders = folderData.subfolders || {};
+                    const allDocuments = [];
                     
-                    if (subfolderName && folderData.subfolders && folderData.subfolders[subfolderName]) {
-                        // Получаем файлы из подпапки
-                        files = folderData.subfolders[subfolderName].files || [];
-                        console.log(`Найдено ${files.length} файлов в подпапке "${subfolderName}"`);
-                    } else if (!subfolderName) {
-                        // Получаем файлы из основной папки
-                        files = folderData.files || [];
-                        console.log(`Найдено ${files.length} файлов в папке "${folderName}"`);
-                    } else {
-                        console.log(`Подпапка "${subfolderName}" не найдена в папке "${folderName}"`);
-                        return [];
+                    // Проходим по всем подпапкам
+                    for (const subfolderName in subfolders) {
+                        const subfolderData = subfolders[subfolderName];
+                        const files = subfolderData.files || [];
+                        
+                        if (files.length > 0) {
+                            // Берем первую страницу как обложку документа
+                            const coverFile = files[0];
+                            allDocuments.push({
+                                subfolder: subfolderName,
+                                coverFile: coverFile,
+                                allFiles: files,
+                                totalPages: files.length
+                            });
+                            console.log(`Найден документ "${subfolderName}" с ${files.length} страницами`);
+                        }
                     }
                     
-                    return files;
+                    console.log(`Найдено ${allDocuments.length} документов в подпапках папки "${folderName}"`);
+                    return allDocuments;
                 } catch (error) {
-                    console.log('Ошибка при получении файлов из карты:', error.message);
+                    console.log('Ошибка при получении документов из подпапок:', error.message);
                     return [];
                 }
             }
@@ -221,70 +248,49 @@
                 }
             }
             
-            // Основная функция загрузки данных с GitHub
-            async function loadFromGitHub() {
-                try {
-                    console.log('🔄 Загрузка map.json с GitHub...');
+            // Функция для создания информации об изображениях из файлов
+            async function createImagesInfo(files, isDocument = false, subfolderName = "") {
+                const imagesInfo = [];
+                
+                // Проверяем наличие папки thumbnails (делаем один раз)
+                const hasThumbnailsFolder = await checkThumbnailsFolder();
+                
+                for (const fileData of files) {
+                    const fileName = fileData.filename;
+                    const description = fileData.description || '';
+                    const displayTitle = fileName.replace(/\.[^.]+$/, "");
                     
-                    // Загружаем map.json
-                    const mapData = await loadMapJSON();
+                    // Формируем URL для оригинального файла
+                    const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
+                    const encodedFileName = encodeURIComponent(fileName);
+                    const directUrl = `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/${encodedFolder}/${encodedFileName}`;
                     
-                    // Получаем список файлов из карты
-                    const filesFromMap = getFilesFromMap(mapData, folder, subfolder);
-                    
-                    if (filesFromMap.length === 0) {
-                        console.log('❌ Файлы не найдены в map.json');
-                        return [];
-                    }
-                    
-                    // Проверяем наличие папки thumbnails
-                    const hasThumbnailsFolder = await checkThumbnailsFolder();
-                    
-                    console.log(`Заголовок: ${title}.`);
-                    console.log(`Подзаголовок: ${subtitle}.`);
-                    console.log(`🖼️ Найдено ${filesFromMap.length} изображений в карте.`);
-                    console.log(`📁 Папка thumbnails: ${hasThumbnailsFolder ? 'найдена' : 'не найдена'}`);
-                    
-                    // Создаем массив для хранения информации об изображениях
-                    const imagesInfo = [];
-                    
-                    // Обрабатываем каждый файл из карты
-                    for (const fileData of filesFromMap) {
-                        const fileName = fileData.filename;
-                        const description = fileData.description || '';
-                        const displayTitle = fileName.replace(/\.[^.]+$/, "");
-                        
-                        // Формируем URL для оригинального файла
-                        const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
-                        const encodedFileName = encodeURIComponent(fileName);
-                        const directUrl = `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/${encodedFolder}/${encodedFileName}`;
-                        
-                        // Ищем миниатюру для этого файла
-                        let thumbnailUrl = directUrl; // По умолчанию используем оригинал
-                        if (hasThumbnailsFolder) {
-                            const foundThumbnailUrl = await findThumbnailForFile(fileName, hasThumbnailsFolder);
-                            if (foundThumbnailUrl) {
-                                thumbnailUrl = foundThumbnailUrl;
-                                console.log(`✅ Использую миниатюру для: ${fileName}`);
-                            } else {
-                                console.log(`⚠️ Миниатюра не найдена, использую оригинал для: ${fileName}`);
-                            }
+                    // Ищем миниатюру для этого файла
+                    let thumbnailUrl = directUrl; // По умолчанию используем оригинал
+                    if (hasThumbnailsFolder) {
+                        const foundThumbnailUrl = await findThumbnailForFile(fileName, hasThumbnailsFolder);
+                        if (foundThumbnailUrl) {
+                            thumbnailUrl = foundThumbnailUrl;
                         }
-                        
-                        // Создаем уникальный UUID на основе имени файла
-                        const uuid = btoa(encodeURIComponent(fileName)).substring(0, 20);
-                        
-                        imagesInfo.push({
-                            title: fileName,
-                            displayTitle: displayTitle,
-                            directUrl: directUrl,
-                            thumbnailUrl: thumbnailUrl,
-                            description: description,
-                            uuid: uuid
-                        });
                     }
                     
-                    // СОРТИРОВКА ПО АЛФАВИТУ по полю displayTitle
+                    // Создаем уникальный UUID на основе имени файла
+                    const uuid = btoa(encodeURIComponent(fileName)).substring(0, 20);
+                    
+                    imagesInfo.push({
+                        title: fileName,
+                        displayTitle: displayTitle,
+                        directUrl: directUrl,
+                        thumbnailUrl: thumbnailUrl,
+                        description: description,
+                        uuid: uuid,
+                        isDocument: isDocument,
+                        subfolderName: subfolderName
+                    });
+                }
+                
+                // СОРТИРОВКА ПО АЛФАВИТУ по полю displayTitle (только для фотографий)
+                if (!isDocument) {
                     imagesInfo.sort((a, b) => {
                         const nameA = a.displayTitle.toLowerCase();
                         const nameB = b.displayTitle.toLowerCase();
@@ -327,17 +333,65 @@
                         
                         return naturalCompare(nameA, nameB);
                     });
+                }
+                
+                return imagesInfo;
+            }
+            
+            // Основная функция загрузки данных с GitHub
+            async function loadFromGitHub() {
+                try {
+                    console.log('🔄 Загрузка map.json с GitHub...');
                     
-                    return imagesInfo;
+                    // Загружаем map.json
+                    const mapData = await loadMapJSON();
+                    
+                    // Получаем фотографии из основной папки
+                    const filesFromMainFolder = getFilesFromMainFolder(mapData, folder);
+                    
+                    // Получаем документы из подпапок
+                    const documentsFromSubfolders = getAllDocumentsFromSubfolders(mapData, folder);
+                    
+                    console.log(`🖼️ Найдено ${filesFromMainFolder.length} фотографий в основной папке`);
+                    console.log(`📄 Найдено ${documentsFromSubfolders.length} документов в подпапках`);
+                    
+                    // Создаем информацию для фотографий
+                    const photosInfo = await createImagesInfo(filesFromMainFolder, false);
+                    
+                    // Создаем информацию для документов
+                    const documentsInfo = [];
+                    for (const document of documentsFromSubfolders) {
+                        // Создаем информацию для обложки документа
+                        const coverInfo = await createImagesInfo([document.coverFile], true, document.subfolder);
+                        
+                        if (coverInfo.length > 0) {
+                            // Добавляем дополнительную информацию о документе
+                            const coverWithDocInfo = {
+                                ...coverInfo[0],
+                                documentSubfolder: document.subfolder,
+                                documentTotalPages: document.totalPages,
+                                documentAllFiles: document.allFiles
+                            };
+                            documentsInfo.push(coverWithDocInfo);
+                        }
+                    }
+                    
+                    return {
+                        photos: photosInfo,
+                        documents: documentsInfo
+                    };
                     
                 } catch (error) {
                     console.error('❌ Ошибка при загрузке данных с GitHub:', error);
-                    return [];
+                    return {
+                        photos: [],
+                        documents: []
+                    };
                 }
             }
             
             // Функция для создания HTML галереи
-            function createGalleryHTML(entries) {
+            function createGalleryHTML(data) {
                 const container = document.getElementById(GALLERY_ID);
                 
                 if (!container) {
@@ -346,50 +400,118 @@
                 }
                 
                 let galleryHtml = "";
-                if(title && title !== "null") {
-                    galleryHtml += `<div class="gallery-title"><h1>${escapeHtml(title)}</h1></div>`;
-                }
-                if(subtitle && subtitle !== "null") {
-                    galleryHtml += `<div class="gallery-subtitle"><h2>${escapeHtml(subtitle)}</h2></div>`;
-                }
-                if((!title || title == "null") && (!subtitle || subtitle == "null")) {
+                
+                // Добавляем заголовок папки
+                if (folder && folder !== "null") {
+                    galleryHtml += `<div class="gallery-title"><h1>${escapeHtml(folder)}</h1></div>`;
+                } else {
                     galleryHtml += `<div class="gallery-title"><h1> </h1></div>`;
                 }
-
-                galleryHtml += `
-                    <div class="media-gallery-captions">
-                        ${entries.map((entry) => {
-                            const displayTitle = entry.displayTitle;
-                            const description = entry.description || '';
-                            
-                            // Создаем data-атрибуты для описания
-                            const dataTitleAttr = displayTitle ? `data-caption="${escapeHtmlAttribute(displayTitle) + " |\n" + escapeHtmlAttribute(description)}"` : '';
-                            
-                            return `
-                                <a href="${entry.directUrl}" 
-                                   class="media-item"
-                                   data-fancybox="${GALLERY_ID}"
-                                   ${dataTitleAttr}>
-                                  
-                                  <div class="media-image-container">
-                                    <img src="${entry.thumbnailUrl}" 
-                                         alt="${escapeHtml(displayTitle)}" 
-                                         class="media-image"
-                                         loading="lazy">
-                                  </div>
-                               
-                                  <div class="media-caption">
-                                    <div class="media-title">${escapeHtml(displayTitle)}</div>
-                                    ${description ? `<div class="media-description" title="${escapeHtml(description)}">${escapeHtml(description)}</div>` : ''}
-                                  </div>
-                                </a>
-                            `;
-                        }).join('')}
-                    </div>
-                `;
+                
+                galleryHtml += `<div class="media-gallery-captions">`;
+                
+                // Сначала отображаем все фотографии
+                data.photos.forEach((entry) => {
+                    const displayTitle = entry.displayTitle;
+                    const description = entry.description || '';
+                    const dataTitleAttr = displayTitle ? `data-caption="${escapeHtmlAttribute(displayTitle) + " |\n" + escapeHtmlAttribute(description)}"` : '';
+                    
+                    galleryHtml += `
+                        <a href="${entry.directUrl}" 
+                           class="media-item photo-item"
+                           data-fancybox="gallery-${GALLERY_ID}"
+                           ${dataTitleAttr}>
+                          
+                          <div class="media-image-container">
+                            <img src="${entry.thumbnailUrl}" 
+                                 alt="${escapeHtml(displayTitle)}" 
+                                 class="media-image photo-image"
+                                 loading="lazy">
+                          </div>
+                       
+                          <div class="media-caption">
+                            <div class="media-title">${escapeHtml(displayTitle)}</div>
+                            ${description ? `<div class="media-description" title="${escapeHtml(description)}">${escapeHtml(description)}</div>` : ''}
+                          </div>
+                        </a>
+                    `;
+                });
+                
+                // Затем отображаем все документы
+                data.documents.forEach((entry) => {
+                    const displayTitle = entry.displayTitle;
+                    const description = entry.description || '';
+                    const documentSubfolder = entry.documentSubfolder || '';
+                    const totalPages = entry.documentTotalPages || 0;
+                    
+                    // Для документов используем название подпапки как заголовок
+                    const cardTitle = documentSubfolder || displayTitle;
+                    
+                    // Создаем уникальный ID для галереи документа
+                    const documentGalleryId = `${GALLERY_ID}-doc-${documentSubfolder.replace(/\s+/g, '-').toLowerCase()}`;
+                    
+                    galleryHtml += `
+                        <a href="${entry.directUrl}" 
+                           class="media-item document-item"
+                           data-fancybox="${documentGalleryId}"
+                           data-caption="${escapeHtmlAttribute(cardTitle)}">
+                          
+                          <div class="media-image-container">
+                            <img src="${entry.thumbnailUrl}" 
+                                 alt="${escapeHtml(cardTitle)}" 
+                                 class="media-image document-image"
+                                 loading="lazy">
+                            <div class="document-icon">📄</div>
+                          </div>
+                       
+                          <div class="media-caption">
+                            <div class="media-title">${escapeHtml(cardTitle)}</div>
+                            ${totalPages > 1 ? `<div class="document-pages-count">${totalPages} страниц</div>` : ''}
+                          </div>
+                        </a>
+                    `;
+                });
+                
+                galleryHtml += `</div>`;
                 
                 container.innerHTML = galleryHtml;
-                initFancyboxGallery();
+                
+                // Добавляем скрытые элементы для документов
+                addHiddenEntriesForDocuments(container, data.documents);
+                
+                initFancyboxGallery(data.documents);
+            }
+            
+            // Функция для добавления скрытых элементов для документов
+            function addHiddenEntriesForDocuments(container, documents) {
+                documents.forEach((document) => {
+                    const documentSubfolder = document.documentSubfolder;
+                    const documentGalleryId = `${GALLERY_ID}-doc-${documentSubfolder.replace(/\s+/g, '-').toLowerCase()}`;
+                    
+                    // Добавляем остальные страницы документа как скрытые элементы
+                    if (document.documentAllFiles && document.documentAllFiles.length > 1) {
+                        // Формируем URL для остальных файлов документа
+                        document.documentAllFiles.slice(1).forEach((fileData, index) => {
+                            const fileName = fileData.filename;
+                            const description = fileData.description || '';
+                            const displayTitle = fileName.replace(/\.[^.]+$/, "");
+                            const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
+                            const encodedFileName = encodeURIComponent(fileName);
+                            const directUrl = `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/${encodedFolder}/${encodedFileName}`;
+                            
+                            const dataTitleAttr = displayTitle ? `data-caption="${escapeHtmlAttribute(displayTitle) + " |\n" + escapeHtmlAttribute(description)}"` : '';
+                            
+                            container.innerHTML += `
+                                <a href="${directUrl}" 
+                                   class="media-item hidden-document-item"
+                                   data-fancybox="${documentGalleryId}"
+                                   ${dataTitleAttr}
+                                   style="display: none;">
+                                </a>
+                            `;
+                        });
+                    }
+                });
             }
             
             // Экранирование HTML
@@ -407,80 +529,35 @@
                     return;
                 }
                 
-                const galleryItems = document.querySelectorAll(`[data-fancybox="${GALLERY_ID}"]`);
-                
-                if (galleryItems.length > 0) {
-                    Fancybox.bind(galleryItems, {
-                        Thumbs: { autoStart: false },
-                        // Кастомизируем отображение
-                        on: {
-                            'Carousel.ready': (fancybox, carousel) => {
-                                // Создаем контейнер для описания
-                                const descriptionContainer = document.createElement('div');
-                                descriptionContainer.className = 'fancybox-description';
-                                descriptionContainer.style.cssText = `
-                                    position: absolute;
-                                    bottom: 0;
-                                    left: 0;
-                                    right: 0;
-                                    background: rgba(0, 0, 0, 0.7);
-                                    color: white;
-                                    padding: 15px;
-                                    font-size: 14px;
-                                    line-height: 1.5;
-                                    z-index: 99999;
-                                    transition: opacity 0.3s;
-                                `;
-                                
-                                // Добавляем контейнер в DOM
-                                document.querySelector('.fancybox__container').appendChild(descriptionContainer);
-                                
-                                // Функция для обновления описания
-                                const updateDescription = () => {
-                                    const slide = carousel.slides[carousel.page];
-                                    const triggerEl = slide.triggerEl;
-                                    
-                                    if (triggerEl) {
-                                        const description = triggerEl.getAttribute('data-description');
-                                        const caption = triggerEl.getAttribute('data-caption') || '';
-                                        
-                                        if (description) {
-                                            descriptionContainer.innerHTML = `
-                                                ${caption ? `<div style="font-weight: bold; margin-bottom: 5px;">${caption}</div>` : ''}
-                                                <div>${description}</div>
-                                            `;
-                                            descriptionContainer.style.display = 'block';
-                                        } else {
-                                            descriptionContainer.style.display = 'none';
-                                        }
-                                    }
-                                };
-                                
-                                // Обновляем описание при смене слайда
-                                carousel.on('change.carousel', updateDescription);
-                                
-                                // Инициализируем описание для первого слайда
-                                updateDescription();
-                                
-                                // Сохраняем ссылку на контейнер для очистки
-                                fancybox.descriptionContainer = descriptionContainer;
-                            },
-                            'close': (fancybox) => {
-                                // Удаляем контейнер описания при закрытии
-                                if (fancybox.descriptionContainer) {
-                                    fancybox.descriptionContainer.remove();
-                                }
-                            }
-                        }
+                // Инициализируем Fancybox для фотографий
+                const photoItems = document.querySelectorAll('.photo-item');
+                if (photoItems.length > 0) {
+                    Fancybox.bind(photoItems, {
+                        Thumbs: { autoStart: false }
                     });
                 }
+                
+                // Инициализируем Fancybox для документов
+                const documentItems = document.querySelectorAll('.document-item');
+                documentItems.forEach((item) => {
+                    const galleryId = item.getAttribute('data-fancybox');
+                    if (galleryId) {
+                        const itemsForGallery = document.querySelectorAll(`[data-fancybox="${galleryId}"]`);
+                        if (itemsForGallery.length > 0) {
+                            Fancybox.bind(itemsForGallery, {
+                                Thumbs: { autoStart: false }
+                            });
+                        }
+                    }
+                });
             }
             
             // Основная функция инициализации
             async function initGallery() {
                 try {
-                    const entries = await loadFromGitHub();
-                    createGalleryHTML(entries);
+                    const data = await loadFromGitHub();
+                    createGalleryHTML(data);
+                    initFancyboxGallery(); // Без параметра
                 } catch (error) {
                     const container = document.getElementById(GALLERY_ID);
                     if (container) {
