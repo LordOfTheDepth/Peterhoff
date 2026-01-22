@@ -1,3 +1,4 @@
+// GalleryNew.js
 (function() {
     'use strict';
     
@@ -36,36 +37,6 @@
             
             // Декодируем папку из URL-encoded формата
             GITHUB_FOLDER = decodeURIComponent(GITHUB_FOLDER);
-            
-            function escapeHtmlAttribute(url) {
-                if (!url) return '';
-                return String(url)
-                    .replace(/&/g, '&amp;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#39;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;');
-            }
-            
-            // Функция для правильного декодирования base64 с учетом UTF-8
-            function decodeBase64UTF8(base64) {
-                try {
-                    // Преобразуем base64 в бинарные данные
-                    const binaryString = atob(base64);
-                    
-                    // Преобразуем бинарную строку в массив байт
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    
-                    // Декодируем как UTF-8
-                    return new TextDecoder('utf-8').decode(bytes);
-                } catch (error) {
-                    console.error('Ошибка декодирования base64:', error);
-                    return '';
-                }
-            }
             
             // Функция для выполнения авторизованных запросов к GitHub API
             async function fetchGitHubAPI(url) {
@@ -111,7 +82,7 @@
                         const fileData = await response.json();
                         if (fileData.content) {
                             // Правильно декодируем base64 с UTF-8
-                            const content = decodeBase64UTF8(fileData.content);
+                            const content = GalleryUtils.decodeBase64UTF8(fileData.content);
                             const jsonData = JSON.parse(content);
                             console.log('✅ map.json файл загружен');
                             return jsonData;
@@ -258,7 +229,7 @@
                 for (const fileData of files) {
                     const fileName = fileData.filename;
                     const description = fileData.description || '';
-                    const displayTitle = fileName.replace(/\.[^.]+$/, "");
+                    const displayTitle = GalleryUtils.formatDisplayTitle(fileName);
                     
                     // Формируем URL для оригинального файла
                     const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
@@ -274,16 +245,13 @@
                         }
                     }
                     
-                    // Создаем уникальный UUID на основе имени файла
-                    const uuid = btoa(encodeURIComponent(fileName)).substring(0, 20);
-                    
                     imagesInfo.push({
                         title: fileName,
                         displayTitle: displayTitle,
                         directUrl: directUrl,
                         thumbnailUrl: thumbnailUrl,
                         description: description,
-                        uuid: uuid,
+                        uuid: GalleryUtils.createFileUUID(fileName),
                         isDocument: isDocument,
                         subfolderName: subfolderName
                     });
@@ -292,46 +260,7 @@
                 // СОРТИРОВКА ПО АЛФАВИТУ по полю displayTitle (только для фотографий)
                 if (!isDocument) {
                     imagesInfo.sort((a, b) => {
-                        const nameA = a.displayTitle.toLowerCase();
-                        const nameB = b.displayTitle.toLowerCase();
-                        
-                        // Функция для натуральной сортировки
-                        const naturalCompare = (str1, str2) => {
-                            const regex = /(\d+)|(\D+)/g;
-                            const parts1 = str1.match(regex) || [];
-                            const parts2 = str2.match(regex) || [];
-                            
-                            for (let i = 0; i < Math.min(parts1.length, parts2.length); i++) {
-                                const part1 = parts1[i];
-                                const part2 = parts2[i];
-                                
-                                // Если обе части - числа, сравниваем как числа
-                                const isNum1 = /^\d+$/.test(part1);
-                                const isNum2 = /^\d+$/.test(part2);
-                                
-                                if (isNum1 && isNum2) {
-                                    const num1 = parseInt(part1, 10);
-                                    const num2 = parseInt(part2, 10);
-                                    if (num1 !== num2) {
-                                        return num1 - num2;
-                                    }
-                                } else {
-                                    // Иначе сравниваем как строки
-                                    const compareResult = part1.localeCompare(part2, 'ru', { 
-                                        sensitivity: 'base',
-                                        numeric: true 
-                                    });
-                                    if (compareResult !== 0) {
-                                        return compareResult;
-                                    }
-                                }
-                            }
-                            
-                            // Если все части совпадают до определенной длины, более короткая строка идет первой
-                            return parts1.length - parts2.length;
-                        };
-                        
-                        return naturalCompare(nameA, nameB);
+                        return GalleryUtils.naturalCompare(a.displayTitle, b.displayTitle);
                     });
                 }
                 
@@ -390,7 +319,91 @@
                 }
             }
             
-            // Функция для создания HTML галереи
+            // Функция для создания HTML галереи фотографий
+            function createPhotosGalleryHTML(photos) {
+                if (photos.length === 0) return '';
+                
+                let html = `<div class="gallery-section photos-section">`;
+                html += `<h2 class="gallery-section-title">Фотографии</h2>`;
+                html += `<div class="media-gallery-captions photos-gallery">`;
+                
+                photos.forEach((entry) => {
+                    const displayTitle = entry.description || '';
+                    const description = entry.displayTitle;
+                    const dataTitleAttr = displayTitle ? `data-caption="${GalleryUtils.escapeHtmlAttribute(displayTitle) + " |\n" + GalleryUtils.escapeHtmlAttribute(description)}"` : '';
+                    
+                    html += `
+                        <a href="${entry.directUrl}" 
+                           class="media-item photo-item"
+                           data-fancybox="gallery-${GALLERY_ID}-photos"
+                           ${dataTitleAttr}>
+                          
+                          <div class="media-image-container">
+                            <img src="${entry.thumbnailUrl}" 
+                                 alt="${GalleryUtils.escapeHtml(displayTitle)}" 
+                                 class="media-image photo-image"
+                                 loading="lazy">
+                          </div>
+                       
+                          <div class="media-caption">
+                            <div class="media-title">${GalleryUtils.escapeHtml(displayTitle)}</div>
+                            ${description ? `<div class="media-description" title="${GalleryUtils.escapeHtml(description)}">${GalleryUtils.escapeHtml(description)}</div>` : ''}
+                          </div>
+                        </a>
+                    `;
+                });
+                
+                html += `</div></div>`;
+                return html;
+            }
+            
+            // Функция для создания HTML галереи документов
+            function createDocumentsGalleryHTML(documents) {
+                if (documents.length === 0) return '';
+                
+                let html = `<div class="gallery-section documents-section">`;
+              //  html += `<h2 class="gallery-section-title">Документы</h2>`;
+                html += `<div class="media-gallery-captions documents-gallery">`;
+                
+                documents.forEach((entry) => {
+                    const displayTitle = entry.displayTitle;
+                    const description = entry.description || '';
+                    const documentSubfolder = entry.documentSubfolder || '';
+                    const totalPages = entry.documentTotalPages || 0;
+                    
+                    // Для документов используем название подпапки как заголовок
+                    const cardTitle = documentSubfolder || displayTitle;
+                    
+                    // Создаем уникальный ID для галереи документа
+                    const documentGalleryId = `${GALLERY_ID}-doc-${documentSubfolder.replace(/\s+/g, '-').toLowerCase()}`;
+                    
+                    html += `
+                        <a href="${entry.directUrl}" 
+                           class="media-item document-item"
+                           data-fancybox="${documentGalleryId}"
+                           data-caption="${GalleryUtils.escapeHtmlAttribute(cardTitle)}">
+                          
+                          <div class="media-image-container">
+                            <img src="${entry.thumbnailUrl}" 
+                                 alt="${GalleryUtils.escapeHtml(cardTitle)}" 
+                                 class="media-image document-image"
+                                 loading="lazy">
+                            <div class="document-icon">📄</div>
+                          </div>
+                       
+                          <div class="media-caption">
+                            <div class="media-title">${GalleryUtils.escapeHtml(cardTitle)}</div>
+                            ${totalPages > 1 ? `<div class="document-pages-count">${totalPages} страниц</div>` : ''}
+                          </div>
+                        </a>
+                    `;
+                });
+                
+                html += `</div></div>`;
+                return html;
+            }
+            
+            // Функция для создания полного HTML галереи
             function createGalleryHTML(data) {
                 const container = document.getElementById(GALLERY_ID);
                 
@@ -403,83 +416,30 @@
                 
                 // Добавляем заголовок папки
                 if (folder && folder !== "null") {
-                    galleryHtml += `<div class="gallery-title"><h1>${escapeHtml(folder)}</h1></div>`;
+                    galleryHtml += `<div class="gallery-title"><h1>${GalleryUtils.escapeHtml(folder)}</h1></div>`;
                 } else {
                     galleryHtml += `<div class="gallery-title"><h1> </h1></div>`;
                 }
                 
-                galleryHtml += `<div class="media-gallery-captions">`;
+                // Добавляем галерею фотографий (если есть)
+                if (data.photos.length > 0) {
+                    galleryHtml += createPhotosGalleryHTML(data.photos);
+                }
                 
-                // Сначала отображаем все фотографии
-                data.photos.forEach((entry) => {
-                    const displayTitle = entry.displayTitle;
-                    const description = entry.description || '';
-                    const dataTitleAttr = displayTitle ? `data-caption="${escapeHtmlAttribute(displayTitle) + " |\n" + escapeHtmlAttribute(description)}"` : '';
-                    
-                    galleryHtml += `
-                        <a href="${entry.directUrl}" 
-                           class="media-item photo-item"
-                           data-fancybox="gallery-${GALLERY_ID}"
-                           ${dataTitleAttr}>
-                          
-                          <div class="media-image-container">
-                            <img src="${entry.thumbnailUrl}" 
-                                 alt="${escapeHtml(displayTitle)}" 
-                                 class="media-image photo-image"
-                                 loading="lazy">
-                          </div>
-                       
-                          <div class="media-caption">
-                            <div class="media-title">${escapeHtml(displayTitle)}</div>
-                            ${description ? `<div class="media-description" title="${escapeHtml(description)}">${escapeHtml(description)}</div>` : ''}
-                          </div>
-                        </a>
-                    `;
-                });
+                // Добавляем галерею документов (если есть)
+                if (data.documents.length > 0) {
+                    galleryHtml += createDocumentsGalleryHTML(data.documents);
+                }
                 
-                // Затем отображаем все документы
-                data.documents.forEach((entry) => {
-                    const displayTitle = entry.displayTitle;
-                    const description = entry.description || '';
-                    const documentSubfolder = entry.documentSubfolder || '';
-                    const totalPages = entry.documentTotalPages || 0;
-                    
-                    // Для документов используем название подпапки как заголовок
-                    const cardTitle = documentSubfolder || displayTitle;
-                    
-                    // Создаем уникальный ID для галереи документа
-                    const documentGalleryId = `${GALLERY_ID}-doc-${documentSubfolder.replace(/\s+/g, '-').toLowerCase()}`;
-                    
-                    galleryHtml += `
-                        <a href="${entry.directUrl}" 
-                           class="media-item document-item"
-                           data-fancybox="${documentGalleryId}"
-                           data-caption="${escapeHtmlAttribute(cardTitle)}">
-                          
-                          <div class="media-image-container">
-                            <img src="${entry.thumbnailUrl}" 
-                                 alt="${escapeHtml(cardTitle)}" 
-                                 class="media-image document-image"
-                                 loading="lazy">
-                            <div class="document-icon">📄</div>
-                          </div>
-                       
-                          <div class="media-caption">
-                            <div class="media-title">${escapeHtml(cardTitle)}</div>
-                            ${totalPages > 1 ? `<div class="document-pages-count">${totalPages} страниц</div>` : ''}
-                          </div>
-                        </a>
-                    `;
-                });
-                
-                galleryHtml += `</div>`;
+                // Если ничего не найдено
+                if (data.photos.length === 0 && data.documents.length === 0) {
+                    galleryHtml += `<div class="no-media"><p>В этой папке нет фотографий или документов</p></div>`;
+                }
                 
                 container.innerHTML = galleryHtml;
                 
                 // Добавляем скрытые элементы для документов
                 addHiddenEntriesForDocuments(container, data.documents);
-                
-                initFancyboxGallery(data.documents);
             }
             
             // Функция для добавления скрытых элементов для документов
@@ -494,12 +454,12 @@
                         document.documentAllFiles.slice(1).forEach((fileData, index) => {
                             const fileName = fileData.filename;
                             const description = fileData.description || '';
-                            const displayTitle = fileName.replace(/\.[^.]+$/, "");
+                            const displayTitle = GalleryUtils.formatDisplayTitle(fileName);
                             const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
                             const encodedFileName = encodeURIComponent(fileName);
                             const directUrl = `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/${encodedFolder}/${encodedFileName}`;
                             
-                            const dataTitleAttr = displayTitle ? `data-caption="${escapeHtmlAttribute(displayTitle) + " |\n" + escapeHtmlAttribute(description)}"` : '';
+                            const dataTitleAttr = displayTitle ? `data-caption="${GalleryUtils.escapeHtmlAttribute(displayTitle) + " |\n" + GalleryUtils.escapeHtmlAttribute(description)}"` : '';
                             
                             container.innerHTML += `
                                 <a href="${directUrl}" 
@@ -514,40 +474,17 @@
                 });
             }
             
-            // Экранирование HTML
-            function escapeHtml(text) {
-                if (!text) return '';
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
-            
-            // Инициализация Fancybox с кастомными настройками для отображения описания
+            // Инициализация Fancybox
             function initFancyboxGallery() {
-                if (typeof Fancybox === 'undefined') {
-                    console.warn('Fancybox не загружен');
-                    return;
-                }
-                
                 // Инициализируем Fancybox для фотографий
-                const photoItems = document.querySelectorAll('.photo-item');
-                if (photoItems.length > 0) {
-                    Fancybox.bind(photoItems, {
-                        Thumbs: { autoStart: false }
-                    });
-                }
+                GalleryUtils.initFancybox('.photo-item');
                 
                 // Инициализируем Fancybox для документов
                 const documentItems = document.querySelectorAll('.document-item');
                 documentItems.forEach((item) => {
                     const galleryId = item.getAttribute('data-fancybox');
                     if (galleryId) {
-                        const itemsForGallery = document.querySelectorAll(`[data-fancybox="${galleryId}"]`);
-                        if (itemsForGallery.length > 0) {
-                            Fancybox.bind(itemsForGallery, {
-                                Thumbs: { autoStart: false }
-                            });
-                        }
+                        GalleryUtils.initFancybox(`[data-fancybox="${galleryId}"]`);
                     }
                 });
             }
@@ -557,7 +494,7 @@
                 try {
                     const data = await loadFromGitHub();
                     createGalleryHTML(data);
-                    initFancyboxGallery(); // Без параметра
+                    initFancyboxGallery();
                 } catch (error) {
                     const container = document.getElementById(GALLERY_ID);
                     if (container) {
