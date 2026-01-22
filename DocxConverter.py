@@ -2,6 +2,11 @@ import re
 from pathlib import Path
 import zipfile
 import xml.etree.ElementTree as ET
+import os
+import json
+import shutil
+from openpyxl import load_workbook
+import logging
 
 class DocxConverter:
     def __init__(self, file_path):
@@ -166,7 +171,62 @@ class DocxConverter:
             file.write(html_content)
         
         return output_path
-
+    
+def convert_docx_in_folder(source_folder, target_folder):
+    """
+    Ищет и конвертирует docx файлы из исходной папки в целевую папку
+    
+    Args:
+        source_folder (str): Путь к исходной папке
+        target_folder (str): Путь к целевой папке
+    
+    Returns:
+        int: Количество сконвертированных файлов
+    """
+    converted_count = 0
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logger = logging.getLogger(__name__)
+    try:
+        # Проверяем существование исходной папки
+        if not os.path.exists(source_folder):
+            logger.warning(f"Исходная папка не найдена: {source_folder}")
+            return 0
+        
+        # Создаем целевую папку, если ее нет
+        os.makedirs(target_folder, exist_ok=True)
+        
+        # Ищем все docx файлы в исходной папке
+        for filename in os.listdir(source_folder):
+            if filename.lower().endswith('.docx'):
+                docx_path = os.path.join(source_folder, filename)
+                
+                try:
+                    # Конвертируем docx в html
+                    logger.info(f"Найден docx файл: {filename}, конвертируем...")
+                    html_path = convert_file_to_html(docx_path)
+                    
+                    # Получаем имя файла для копирования в целевую папку
+                    html_filename = "text.html" #os.path.basename(html_path)
+                    target_html_path = os.path.join(target_folder, html_filename)
+                    
+                    # Копируем сгенерированный html в целевую папку
+                    shutil.copy2(html_path, target_html_path)
+                    
+                    converted_count += 1
+                    logger.info(f"Успешно сконвертирован и скопирован: {filename} -> {html_filename}")
+                    
+                except Exception as e:
+                    logger.error(f"Ошибка при конвертации файла {filename}: {e}")
+        
+        if converted_count > 0:
+            logger.info(f"Сконвертировано {converted_count} docx файлов в папке: {target_folder}")
+        else:
+            logger.info(f"Docx файлы не найдены в папке: {source_folder}")
+            
+    except Exception as e:
+        logger.error(f"Ошибка при поиске docx файлов в папке {source_folder}: {e}")
+    
+    return converted_count
 
 def convert_file_to_html(file_path, output_path=None):
     """

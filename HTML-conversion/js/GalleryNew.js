@@ -1,14 +1,13 @@
 (function() {
     'use strict';
     
-    
     // ФУНКЦИЯ для создания галереи с параметрами
-    // Добавлен параметр githubToken (необязательный)
-    function createGallery(GALLERY_ID, title, subtitle, githubFolderUrl) {
+    function createGallery(GALLERY_ID, title, subtitle, folder, subfolder, githubFolderUrl) {
         let token1 = "pat_"
         let token2 = "11ASO6L4Y0ohnzEd8NtYHe_XQuxbUyEXroUsSzZ8r9AA"
         let token3 = "LcjLiu5IUX260bb5bUjSQHCNC2EXYJ0vWDcm1m"
         let githubToken = "github_" + token1 + token2 + token3;
+        
         try {
             // Извлекаем параметры из URL
             const urlParts = githubFolderUrl.split('/');
@@ -39,13 +38,13 @@
             GITHUB_FOLDER = decodeURIComponent(GITHUB_FOLDER);
             
             function escapeHtmlAttribute(url) {
-            if (!url) return '';
-            return String(url)
-                .replace(/&/g, '&amp;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
+                if (!url) return '';
+                return String(url)
+                    .replace(/&/g, '&amp;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
             }
             
             // Функция для правильного декодирования base64 с учетом UTF-8
@@ -66,15 +65,6 @@
                     console.error('Ошибка декодирования base64:', error);
                     return '';
                 }
-            }
-            
-            // Функция для усечения текста с добавлением "..."
-            function truncateText(text, maxLength) {
-                if (!text || text.length <= maxLength) {
-                    return text;
-                }
-                // Обрезаем до maxLength символов и добавляем многоточие
-                return text.substring(0, maxLength) + ' ...';
             }
             
             // Функция для выполнения авторизованных запросов к GitHub API
@@ -107,48 +97,63 @@
                 }
             }
             
-            // Функция для загрузки JSON файла с описаниями
-            async function loadDescriptionsJSON() {
+            // Функция для загрузки map.json
+            async function loadMapJSON() {
                 try {
                     const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
+                    const mapJsonUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}/map.json?ref=${GITHUB_BRANCH}`;
                     
-                    // Пробуем разные имена файлов
-                    const possibleNames = [
-                        'descriptions.json',
-                        'description.json',
-                        'metadata.json',
-                        'info.json'
-                    ];
+                    console.log(`Пытаюсь загрузить map.json: ${mapJsonUrl}`);
                     
-                    for (const fileName of possibleNames) {
-                        try {
-                            const jsonUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}/${fileName}?ref=${GITHUB_BRANCH}`;
-                            
-                            console.log(`Пытаюсь загрузить: ${jsonUrl}`);
-                            
-                            const response = await fetchGitHubAPI(jsonUrl);
-                            
-                            if (response.ok) {
-                                const fileData = await response.json();
-                                if (fileData.content) {
-                                    // Правильно декодируем base64 с UTF-8
-                                    const content = decodeBase64UTF8(fileData.content);
-                                    const jsonData = JSON.parse(content);
-                                    console.log('✅ JSON файл загружен:', jsonData);
-                                    return jsonData;
-                                }
-                            }
-                        } catch (e) {
-                            console.log(`Файл ${fileName} не найден или ошибка:`, e.message);
-                            continue;
+                    const response = await fetchGitHubAPI(mapJsonUrl);
+                    
+                    if (response.ok) {
+                        const fileData = await response.json();
+                        if (fileData.content) {
+                            // Правильно декодируем base64 с UTF-8
+                            const content = decodeBase64UTF8(fileData.content);
+                            const jsonData = JSON.parse(content);
+                            console.log('✅ map.json файл загружен');
+                            return jsonData;
                         }
                     }
                     
-                    console.log('Не найден ни один JSON файл с описаниями');
-                    return {}; // Возвращаем пустой объект
+                    throw new Error('map.json не найден или пустой');
                 } catch (error) {
-                    console.log('Ошибка при загрузке JSON файла:', error.message);
-                    return {};
+                    console.log('Ошибка при загрузке map.json:', error.message);
+                    throw error;
+                }
+            }
+            
+            // Функция для получения списка файлов из карты
+            function getFilesFromMap(mapData, folderName, subfolderName) {
+                try {
+                    if (!mapData.folders || !mapData.folders[folderName]) {
+                        console.log(`Папка "${folderName}" не найдена в map.json`);
+                        return [];
+                    }
+                    
+                    const folderData = mapData.folders[folderName];
+                    
+                    let files = [];
+                    
+                    if (subfolderName && folderData.subfolders && folderData.subfolders[subfolderName]) {
+                        // Получаем файлы из подпапки
+                        files = folderData.subfolders[subfolderName].files || [];
+                        console.log(`Найдено ${files.length} файлов в подпапке "${subfolderName}"`);
+                    } else if (!subfolderName) {
+                        // Получаем файлы из основной папки
+                        files = folderData.files || [];
+                        console.log(`Найдено ${files.length} файлов в папке "${folderName}"`);
+                    } else {
+                        console.log(`Подпапка "${subfolderName}" не найдена в папке "${folderName}"`);
+                        return [];
+                    }
+                    
+                    return files;
+                } catch (error) {
+                    console.log('Ошибка при получении файлов из карты:', error.message);
+                    return [];
                 }
             }
             
@@ -219,113 +224,63 @@
             // Основная функция загрузки данных с GitHub
             async function loadFromGitHub() {
                 try {
-                    console.log('🔄 Загрузка списка файлов с GitHub...');
+                    console.log('🔄 Загрузка map.json с GitHub...');
                     
-                    const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
+                    // Загружаем map.json
+                    const mapData = await loadMapJSON();
                     
-                    // Загружаем список файлов
-                    let filesResponse;
-                    try {
-                        filesResponse = await fetchGitHubAPI(`https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}?ref=${GITHUB_BRANCH}`);
-                    } catch (error) {
-                        console.log('Ошибка при загрузке списка файлов:', error.message);
+                    // Получаем список файлов из карты
+                    const filesFromMap = getFilesFromMap(mapData, folder, subfolder);
+                    
+                    if (filesFromMap.length === 0) {
+                        console.log('❌ Файлы не найдены в map.json');
                         return [];
                     }
                     
-                    const filesData = await filesResponse.json();
-                    
-                    // Фильтруем только PNG и JPG файлы
-                    const imageFiles = filesData.filter(item => {
-                        if (item.type !== 'file') return false;
-                        const fileName = item.name.toLowerCase();
-                        return fileName.endsWith('.jpg') || 
-                               fileName.endsWith('.jpeg') || 
-                               fileName.endsWith('.png');
-                    });
-
                     // Проверяем наличие папки thumbnails
                     const hasThumbnailsFolder = await checkThumbnailsFolder();
-
-                    // Пытаемся загрузить JSON с описаниями, но не падаем если не найден
-                    let descriptionsData = {};
-                    try {
-                        descriptionsData = await loadDescriptionsJSON();
-                    } catch (error) {
-                        console.log('JSON с описаниями не найден, продолжаем без него');
-                    }
-
-                    if(title == "") {
-                        title = descriptionsData[Object.keys(descriptionsData).find(key => 
-                            key === "__title__"
-                        )];
-                    }
-
-                    if(subtitle == "") {
-                        subtitle = descriptionsData[Object.keys(descriptionsData).find(key => 
-                            key === "__subtitle__"
-                        )];
-                    }
-
+                    
                     console.log(`Заголовок: ${title}.`);
                     console.log(`Подзаголовок: ${subtitle}.`);
-                    console.log(`🖼️ Найдено ${imageFiles.length} изображений.`);
+                    console.log(`🖼️ Найдено ${filesFromMap.length} изображений в карте.`);
                     console.log(`📁 Папка thumbnails: ${hasThumbnailsFolder ? 'найдена' : 'не найдена'}`);
                     
                     // Создаем массив для хранения информации об изображениях
                     const imagesInfo = [];
                     
-                    // Обрабатываем каждый файл изображения
-                    for (const item of imageFiles) {
-                        const displayTitle = item.name.replace(/\.[^.]+$/, "");
+                    // Обрабатываем каждый файл из карты
+                    for (const fileData of filesFromMap) {
+                        const fileName = fileData.filename;
+                        const description = fileData.description || '';
+                        const displayTitle = fileName.replace(/\.[^.]+$/, "");
                         
-                        // Пробуем найти описание разными способами
-                        let description = '';
-                        
-                        // 1. По полному имени файла (с расширением)
-                        const fileNameKey = Object.keys(descriptionsData).find(key => 
-                            key === item.name || 
-                            decodeURIComponent(key) === item.name
-                        );
-                        
-                        if (fileNameKey) {
-                            description = descriptionsData[fileNameKey];
-                        }
-                        // 2. По имени без расширения
-                        else {
-                            const titleKey = Object.keys(descriptionsData).find(key => 
-                                key === displayTitle || 
-                                decodeURIComponent(key) === displayTitle ||
-                                key.replace(/\.[^.]+$/, "") === displayTitle
-                            );
-                            
-                            if (titleKey) {
-                                description = descriptionsData[titleKey];
-                            }
-                        }
-                        
-                        // Создаем усеченную версию для миниатюры
-                        const truncatedDescription = description; //truncateText(description, 100);
+                        // Формируем URL для оригинального файла
+                        const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
+                        const encodedFileName = encodeURIComponent(fileName);
+                        const directUrl = `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/${encodedFolder}/${encodedFileName}`;
                         
                         // Ищем миниатюру для этого файла
-                        let thumbnailUrl = item.download_url;
+                        let thumbnailUrl = directUrl; // По умолчанию используем оригинал
                         if (hasThumbnailsFolder) {
-                            const foundThumbnailUrl = await findThumbnailForFile(item.name, hasThumbnailsFolder);
+                            const foundThumbnailUrl = await findThumbnailForFile(fileName, hasThumbnailsFolder);
                             if (foundThumbnailUrl) {
                                 thumbnailUrl = foundThumbnailUrl;
-                                console.log(`✅ Использую миниатюру для: ${item.name}`);
+                                console.log(`✅ Использую миниатюру для: ${fileName}`);
                             } else {
-                                console.log(`⚠️ Миниатюра не найдена, использую оригинал для: ${item.name}`);
+                                console.log(`⚠️ Миниатюра не найдена, использую оригинал для: ${fileName}`);
                             }
                         }
                         
+                        // Создаем уникальный UUID на основе имени файла
+                        const uuid = btoa(encodeURIComponent(fileName)).substring(0, 20);
+                        
                         imagesInfo.push({
-                            title: item.name,
+                            title: fileName,
                             displayTitle: displayTitle,
-                            directUrl: item.download_url,
+                            directUrl: directUrl,
                             thumbnailUrl: thumbnailUrl,
                             description: description,
-                            truncatedDescription: truncatedDescription,
-                            uuid: item.sha
+                            uuid: uuid
                         });
                     }
                     
@@ -372,6 +327,7 @@
                         
                         return naturalCompare(nameA, nameB);
                     });
+                    
                     return imagesInfo;
                     
                 } catch (error) {
@@ -388,15 +344,6 @@
                     console.error(`❌ Контейнер с id="${GALLERY_ID}" не найден`);
                     return;
                 }
-                 
-                // if (!entries || entries.length === 0) {
-                //     container.innerHTML = `
-                //         <div class="no-media">
-                //           <p>Ошибка соединения. Изображения не найдены.</p>
-                //         </div>
-                //     `;
-                //     return;
-                // }
                 
                 let galleryHtml = "";
                 if(title && title !== "null") {
@@ -414,10 +361,8 @@
                         ${entries.map((entry) => {
                             const displayTitle = entry.displayTitle;
                             const description = entry.description || '';
-                            const truncatedDescription = entry.truncatedDescription || '';
                             
                             // Создаем data-атрибуты для описания
-
                             const dataTitleAttr = displayTitle ? `data-caption="${escapeHtmlAttribute(displayTitle) + " |\n" + escapeHtmlAttribute(description)}"` : '';
                             
                             return `
@@ -435,7 +380,7 @@
                                
                                   <div class="media-caption">
                                     <div class="media-title">${escapeHtml(displayTitle)}</div>
-                                    ${truncatedDescription ? `<div class="media-description" title="${escapeHtml(description)}">${escapeHtml(truncatedDescription)}</div>` : ''}
+                                    ${description ? `<div class="media-description" title="${escapeHtml(description)}">${escapeHtml(description)}</div>` : ''}
                                   </div>
                                 </a>
                             `;

@@ -134,7 +134,6 @@ class ThumbnailGenerator:
             logger.error(f"Ошибка при обработке папки {input_folder}: {e}")
             return created_thumbnails
 
-
 # Пример использования
 if __name__ == "__main__":
     # Создаем экземпляр генератора

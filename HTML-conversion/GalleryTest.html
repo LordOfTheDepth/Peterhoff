@@ -1,3 +1,4 @@
+<body>
 <link rel="stylesheet" href="css/MainStyle.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css" />
 <link rel="stylesheet" href="css/MainButtons.css" />
@@ -19,7 +20,7 @@
 <div id="header"></div>
 <div id="buttons"></div>
 
-<div class="main-text-container">
+<div class="main-text-container" id = "main-text-container">
 
 </div>
 
@@ -47,17 +48,21 @@
 </div>
 <script>
 
+
 createBaseElements("Петергоф: разрушения", "https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_Ptrg_war.jpg?raw=true", "2447" , "2448" , "2449", 1, 2);
 
 </script>
 
 <script>
-    const initialUrl = "https://github.com/LordOfTheDepth/Peterhoff/tree/main/Sorted/Peterhof/%D1%80%D0%B0%D0%B7%D1%80%D1%83%D1%88%D0%B5%D0%BD%D0%B8%D1%8F";
+    const initialUrl = "https://github.com/LordOfTheDepth/Peterhoff/tree/main/SortedMap/Peterhof/%D1%80%D0%B0%D0%B7%D1%80%D1%83%D1%88%D0%B5%D0%BD%D0%B8%D1%8F";
     
-    scanAndLoad(initialUrl);
+   // scanAndLoad(initialUrl);
+
+   createGallery("gallery-1", "Заголовк", "Подзаголовок", "Большой дворец", "", initialUrl)
 </script>
 
 <script>
   
   
 </script>
+</body>
