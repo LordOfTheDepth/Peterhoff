@@ -314,11 +314,11 @@
                 }
                 
                 // СОРТИРОВКА ПО АЛФАВИТУ по полю displayTitle (только для фотографий)
-                if (!isDocument) {
-                    imagesInfo.sort((a, b) => {
-                        return GalleryUtils.naturalCompare(a.displayTitle, b.displayTitle);
-                    });
-                }
+                // if (!isDocument) {
+                //     imagesInfo.sort((a, b) => {
+                //         return GalleryUtils.naturalCompare(a.displayTitle, b.displayTitle);
+                //     });
+                // }
                 
                 return imagesInfo;
             }
