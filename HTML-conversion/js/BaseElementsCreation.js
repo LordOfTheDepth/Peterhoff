@@ -41,13 +41,13 @@ textURL = ""
 textURL = `https://lordofthedepth.github.io/Peterhoff/Sorted/${locations[locationId-1]}/${stages[stageId-1]}/text.html`
 
 createElement("main-text-container", textURL)
-createElement("galleries-container").then(() => {
+//createElement("galleries-container").then(() => {
 const initialUrl = "https://lordofthedepth.github.io/Peterhoff/SortedMap/Peterhof/разрушения";
 initAllGalleries(initialUrl)
-});
+//});
 
 
-const GALLERIES_CONTAINER_ID = 'galleries-container';
+const GALLERIES_CONTAINER_ID = 'gallery-1';
     
 
 // Функция для загрузки map.json напрямую
