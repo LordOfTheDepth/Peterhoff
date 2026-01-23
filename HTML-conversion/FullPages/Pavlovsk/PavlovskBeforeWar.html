@@ -1,8 +1,9 @@
-<script src="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/js/Utills.js"></script>
 <link rel="stylesheet" href="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/css/MainStyle.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css" />
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
 <script src="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/js/Gallery.js"></script>
+<script src="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/js/GalleryUtils.js"></script>
+<script src="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/js/Utills.js"></script>
 <script src="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/js/BaseElementsCreation.js"></script>
 <script src="https://lordofthedepth.github.io/Peterhoff/HTML-conversion/js/FoldersLoading.js"></script>
 
@@ -12,7 +13,8 @@
 <div id="header"></div>
 <div id="buttons"></div>
 
-<div class="main-text-container"></div>
+<div class="main-text-container" id = "main-text-container"></div>
+
 
 <div id = "loading-info" class= "gallery-title">
 
@@ -33,15 +35,9 @@
 </div>
 <script>
 
-createBaseElements("Павловск до войны", "https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_pavl_01.jpg?raw=true","2450" ,"2451","2452");
+createBaseElements("Павловск до войны", "https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_pavl_01.jpg?raw=true","2450" ,"2451","2452",3,1);
 
 </script>
 
 
-<script>
-    const initialUrl = "https://github.com/LordOfTheDepth/Peterhoff/tree/main/Sorted/Pavlovsk/%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B";
-    
-    scanAndLoad(initialUrl);
-   
-</script>
 
