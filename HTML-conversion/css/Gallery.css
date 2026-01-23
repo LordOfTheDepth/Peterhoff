@@ -177,6 +177,7 @@
       
       .media-image-container {
         height: 150px;
+        padding: 10px;
       }
       .fancybox__container {
           --fancybox-thumbs-width: 60px;
