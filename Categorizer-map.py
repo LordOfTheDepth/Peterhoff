@@ -173,7 +173,7 @@ def DoFolder(source_folder, dest_folder):
             folder_name = str(folder_name_cell).strip()
         else:
             logger.error(f"Не найдена ячейка с заголовком на листе: {sheet_name}")
-            folder_name = "Неизвестная папка"
+            folder_name = "   "
         
         # Получаем название подпапки из второй строки, второго столбца (столбец B)
         subfolder_name_cell = ws.cell(row=2, column=2).value
