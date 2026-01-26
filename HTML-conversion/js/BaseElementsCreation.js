@@ -42,7 +42,7 @@ textURL = `https://lordofthedepth.github.io/Peterhoff/SortedMap/${locations[loca
 
 createElement("main-text-container", textURL)
 //createElement("galleries-container").then(() => {
-const initialUrl = "https://lordofthedepth.github.io/Peterhoff/SortedMap/Peterhof/разрушения";
+const initialUrl = `https://lordofthedepth.github.io/Peterhoff/SortedMap/Peterhof/${stages[stageId-1]}`;
 initAllGalleries(initialUrl)
 //});
 
