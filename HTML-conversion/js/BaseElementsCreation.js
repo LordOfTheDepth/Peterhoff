@@ -38,7 +38,7 @@ locations = ["Peterhof","Pushkin","Pavlovsk"]
 textURL = ""
 
 
-textURL = `https://lordofthedepth.github.io/Peterhoff/Sorted/${locations[locationId-1]}/${stages[stageId-1]}/text.html`
+textURL = `https://lordofthedepth.github.io/Peterhoff/SortedMap/${locations[locationId-1]}/${stages[stageId-1]}/text.html`
 
 createElement("main-text-container", textURL)
 //createElement("galleries-container").then(() => {
