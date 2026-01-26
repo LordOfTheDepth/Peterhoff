@@ -109,42 +109,7 @@ class DocxConverter:
                 except:
                     raise ValueError(f"Неподдерживаемый формат файла: {suffix}")
     
-    def convert_to_html(self, text=None):
-        """
-        Конвертирует текст в HTML формат.
-        
-        Args:
-            text (str, optional): Текст для конвертации. Если None, читает из файла.
-            
-        Returns:
-            str: HTML представление текста (только содержимое).
-        """
-        if text is None:
-            text = self.read_file()
-        
-        # Убираем лишние пробелы и разделяем на строки
-        lines = [line.strip() for line in text.split('\n')]
-        lines = [line for line in lines if line]  # Убираем пустые строки
-        
-        if not lines:
-            return ""
-        
-        # Первая непустая строка - заголовок
-        title = lines[0]
-        html_parts = [f'<h1 class="header-content align-center">{title}</h1>']
-        
-        # Добавляем основную часть
-        html_parts.append('<div class="main-text-content align-justify size-medium">')
-        
-        # Обрабатываем остальные строки (абзацы)
-        for line in lines[1:]:
-            if line.strip():  # Пропускаем пустые строки
-                html_parts.append(f'<p>{line}</p>')
-        
-        html_parts.append('</div>')
-        
-        # Возвращаем только HTML контент (без DOCTYPE, html, head, body и стилей)
-        return '\n'.join(html_parts)
+    
     
     def save_html(self, output_path=None):
         """
@@ -242,30 +207,75 @@ def convert_file_to_html(file_path, output_path=None):
     converter = DocxConverter(file_path)
     return converter.save_html(output_path)
 
-
-if __name__ == "__main__":
-    import sys
-    
-    if len(sys.argv) > 1:
-        # Если запускается из командной строки с аргументом
-        input_file = sys.argv[1]
-        output_file = sys.argv[2] if len(sys.argv) > 2 else None
+def convert_to_html(self, text=None):
+        """
+        Конвертирует текст в HTML формат.
         
-        try:
-            result_path = convert_file_to_html(input_file, output_file)
-            print(f"Файл успешно конвертирован: {result_path}")
-        except FileNotFoundError as e:
-            print(f"Ошибка: {e}")
-        except ValueError as e:
-            print(f"Ошибка: {e}")
-        except Exception as e:
-            print(f"Непредвиденная ошибка: {e}")
-            import traceback
-            traceback.print_exc()
-    else:
-        # Автоматическая конвертация указанного файла
-        try:
-            result_path = convert_file_to_html(r"C:\liferay-ce-portal-7.2.1-ga2\PeterhoffParts\Peterhoff\Тексты\1. Вводный текст_на главную страницу.docx")
-            print(f"Файл успешно конвертирован: {result_path}")
-        except Exception as e:
-            print(f"Ошибка при конвертации: {e}")
+        Args:
+            text (str, optional): Текст для конвертации. Если None, читает из файла.
+            
+        Returns:
+            str: HTML представление текста (только содержимое).
+        """
+        if text is None:
+            text = self.read_file()
+        
+        # Убираем лишние пробелы и разделяем на строки
+        lines = [line.strip() for line in text.split('\n')]
+        lines = [line for line in lines if line]  # Убираем пустые строки
+        
+        if not lines:
+            return ""
+        
+        # Первая непустая строка - заголовок
+        title = lines[0]
+        html_parts = [f'<h1 class="header-content align-center">{title}</h1>']
+        
+        # Добавляем основную часть
+        html_parts.append('<div class="main-text-content align-justify size-medium">')
+        
+        # Обрабатываем остальные строки (абзацы)
+        for line in lines[1:]:
+            if line.strip():  # Пропускаем пустые строки
+                html_parts.append(f'<p>{line}</p>')
+        
+        html_parts.append('</div>')
+        
+        # Возвращаем только HTML контент (без DOCTYPE, html, head, body и стилей)
+        return '\n'.join(html_parts)
+
+def format_text_to_html(text):
+    """
+    Расширенная версия с поддержкой:
+    - Диапазонов чисел (через тире, дефис или двоеточие)
+    - Римских цифр
+    - Составных номеров (через точку или с буквами)
+    """
+    if not text:
+        return ""
+    
+    # Заменяем переносы строк
+    html_text = text.replace('\n', '<br>')
+    
+    # Обрабатываем "г." как год (после цифры)
+    html_text = re.sub(r'(\d{1,4})\s*г\.', r'\1&nbsp;г.', html_text)
+    
+    # Обрабатываем "г." как город (перед словом с большой буквы)
+    html_text = re.sub(r'г\.\s*([А-ЯЁA-Z][а-яёa-z]+)', r'г.&nbsp;\1', html_text)
+    
+    # Паттерн для чисел: может быть просто число, диапазон, римские цифры, составной номер
+    # Примеры: 123, 123-456, 123а, 1.2, I, II, XLI
+    number_pattern = r'\d+(?:[-\—:]\d+)?(?:[а-яa-z]?|\.\d+)?|(?:\b[IVXLCDM]+\b)'
+    
+    # Обрабатываем все сокращения с числами
+    abbreviations = ['Л\.', 'Д\.', 'Оп\.']
+    
+    for abbr in abbreviations:
+        # Ищем сокращение, за которым следует число/номер
+        pattern = fr'({abbr})\s*({number_pattern})'
+        html_text = re.sub(pattern, r'\1&nbsp;\2', html_text, flags=re.IGNORECASE)
+    
+    # Дополнительно: обработка возможных вариантов с разным регистром
+    html_text = re.sub(r'(?i)(л\.|д\.|оп\.)\s*(\d+)', lambda m: f'{m.group(1)}&nbsp;{m.group(2)}', html_text)
+    
+    return html_text

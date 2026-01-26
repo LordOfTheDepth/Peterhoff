@@ -361,7 +361,7 @@
                 
                 photos.forEach((entry) => {
                     const displayTitle = entry.displayTitle;
-                    const description = GalleryUtils.formatTextWithLineBreaks(entry.description) || '';
+                    const description = entry.description || '';
                     const dataTitleAttr = displayTitle ? `data-caption="${GalleryUtils.escapeHtmlAttribute(description)}"` : '';
                     
                     html += `

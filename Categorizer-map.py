@@ -216,7 +216,7 @@ def DoFolder(source_folder, dest_folder):
             
             image_name = str(row[0]).strip()
             description = str(row[1]).strip() if len(row) > 1 and row[1] is not None else ""
-            
+            description = DocxConverter.format_text_to_html(description)
             row_count += 1
             
             # Нормализуем имя для поиска
@@ -364,7 +364,7 @@ def main():
     else:
         print(f"Directory '{sortedPath}' not found.")
 
-    locations = ["Петергоф","Пушкин","Павловск"]
+    locations = ["Петергоф"]#,"Пушкин","Павловск"]
     stages = ["до войны","разрушения","восстановление"]
     
     for location in locations:
