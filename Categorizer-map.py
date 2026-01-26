@@ -364,7 +364,7 @@ def main():
     else:
         print(f"Directory '{sortedPath}' not found.")
 
-    locations = ["Петергоф"] #,"Пушкин","Павловск"]
+    locations = ["Петергоф","Пушкин","Павловск"]
     stages = ["до войны","разрушения","восстановление"]
     
     for location in locations:
