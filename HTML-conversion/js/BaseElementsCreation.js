@@ -18,7 +18,7 @@ if(locationId == 2)
 }
 if(logoUrl != "")
 {
-  insertHtml("location-logo", `<img src = ${logoUrl}> </img>`)
+  //insertHtml("location-logo", `<img src = ${logoUrl}> </img>`)
 }
   
 });
