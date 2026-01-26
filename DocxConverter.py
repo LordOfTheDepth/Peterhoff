@@ -136,7 +136,59 @@ class DocxConverter:
             file.write(html_content)
         
         return output_path
+    def convert_to_html(self, text=None):
+            """
+            Конвертирует текст в HTML формат.
+            
+            Args:
+                text (str, optional): Текст для конвертации. Если None, читает из файла.
+                
+            Returns:
+                str: HTML представление текста (только содержимое).
+            """
+            if text is None:
+                text = self.read_file()
+            
+            # Убираем лишние пробелы и разделяем на строки
+            lines = [line.strip() for line in text.split('\n')]
+            lines = [line for line in lines if line]  # Убираем пустые строки
+            
+            if not lines:
+                return ""
+            
+            # Первая непустая строка - заголовок
+            title = lines[0]
+            html_parts = [f'<h1 class="header-content align-center">{title}</h1>']
+            
+            # Добавляем основную часть
+            html_parts.append('<div class="main-text-content align-justify size-medium">')
+            
+            # Обрабатываем остальные строки (абзацы)
+            for line in lines[1:]:
+                if line.strip():  # Пропускаем пустые строки
+                    html_parts.append(f'<p>{line}</p>')
+            
+            html_parts.append('</div>')
+            
+            # Возвращаем только HTML контент (без DOCTYPE, html, head, body и стилей)
+            return '\n'.join(html_parts)
     
+def convert_file_to_html(file_path, output_path=None):
+    """
+    Функция для быстрой конвертации файла в HTML.
+    
+    Args:
+        file_path (str or Path): Путь к исходному файлу (.txt или .docx).
+        output_path (str or Path, optional): Путь для сохранения HTML файла.
+        
+    Returns:
+        Path: Путь к сохраненному HTML файлу.
+    """
+    converter = DocxConverter(file_path)
+    return converter.save_html(output_path)
+
+    
+        
 def convert_docx_in_folder(source_folder, target_folder):
     """
     Ищет и конвертирует docx файлы из исходной папки в целевую папку
@@ -193,56 +245,7 @@ def convert_docx_in_folder(source_folder, target_folder):
     
     return converted_count
 
-def convert_file_to_html(file_path, output_path=None):
-    """
-    Функция для быстрой конвертации файла в HTML.
-    
-    Args:
-        file_path (str or Path): Путь к исходному файлу (.txt или .docx).
-        output_path (str or Path, optional): Путь для сохранения HTML файла.
-        
-    Returns:
-        Path: Путь к сохраненному HTML файлу.
-    """
-    converter = DocxConverter(file_path)
-    return converter.save_html(output_path)
 
-def convert_to_html(self, text=None):
-        """
-        Конвертирует текст в HTML формат.
-        
-        Args:
-            text (str, optional): Текст для конвертации. Если None, читает из файла.
-            
-        Returns:
-            str: HTML представление текста (только содержимое).
-        """
-        if text is None:
-            text = self.read_file()
-        
-        # Убираем лишние пробелы и разделяем на строки
-        lines = [line.strip() for line in text.split('\n')]
-        lines = [line for line in lines if line]  # Убираем пустые строки
-        
-        if not lines:
-            return ""
-        
-        # Первая непустая строка - заголовок
-        title = lines[0]
-        html_parts = [f'<h1 class="header-content align-center">{title}</h1>']
-        
-        # Добавляем основную часть
-        html_parts.append('<div class="main-text-content align-justify size-medium">')
-        
-        # Обрабатываем остальные строки (абзацы)
-        for line in lines[1:]:
-            if line.strip():  # Пропускаем пустые строки
-                html_parts.append(f'<p>{line}</p>')
-        
-        html_parts.append('</div>')
-        
-        # Возвращаем только HTML контент (без DOCTYPE, html, head, body и стилей)
-        return '\n'.join(html_parts)
 
 def format_text_to_html(text):
     """
