@@ -437,7 +437,7 @@
                        
                           <div class="media-caption">
                             <div class="media-title">${GalleryUtils.escapeHtml(cardTitle)}</div>
-                            ${totalPages > 1 ? `<div class="document-pages-count">${totalPages} страниц</div>` : ''}
+                            ${totalPages > 1 ? `<div class="document-pages-count">${totalPages} стр.</div>` : ''}
                           </div>
                         </a>
                     `;
