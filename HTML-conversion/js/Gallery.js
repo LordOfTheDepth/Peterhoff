@@ -168,24 +168,6 @@
                         // Игнорируем ошибку, пробуем другой способ
                     }
                     
-                    // Пробуем через GitHub API
-                    try {
-                        const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
-                        const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}/thumbnails?ref=${GITHUB_BRANCH}`;
-                        
-                        const apiResponse = await fetchGitHubAPI(apiUrl);
-                        
-                        if (apiResponse.ok) {
-                            const data = await apiResponse.json();
-                            // Если это массив, значит это папка с содержимым
-                            if (Array.isArray(data)) {
-                                console.log('✅ Папка thumbnails найдена через GitHub API');
-                                return true;
-                            }
-                        }
-                    } catch (e) {
-                        // Игнорируем ошибку
-                    }
                     
                     console.log('Папка thumbnails не найдена');
                     return false;
@@ -219,25 +201,7 @@
                         console.log(`✅ Найдена миниатюра через GitHub Pages для: ${imageName}`);
                         return thumbnailUrl;
                     }
-                    
-                    // Пробуем через GitHub API
-                    try {
-                        const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
-                        const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodedFolder}/thumbnails/${encodeURIComponent(imageName)}?ref=${GITHUB_BRANCH}`;
-                        
-                        const apiResponse = await fetchGitHubAPI(apiUrl);
-                        
-                        if (apiResponse.ok) {
-                            const fileData = await apiResponse.json();
-                            if (fileData.download_url) {
-                                console.log(`✅ Найдена миниатюра через GitHub API для: ${imageName}`);
-                                return fileData.download_url;
-                            }
-                        }
-                    } catch (e) {
-                        // Игнорируем ошибку API
-                    }
-                    
+
                     console.log(`❌ Миниатюра не найдена для: ${imageName}`);
                     return null;
                 } catch (error) {
@@ -251,7 +215,7 @@
                 const imagesInfo = [];
                 
                 // Проверяем наличие папки thumbnails (делаем один раз)
-                const hasThumbnailsFolder = await checkThumbnailsFolder();
+                const hasThumbnailsFolder = true;//await checkThumbnailsFolder();
                 
                 for (const fileData of files) {
                     const fileName = fileData.filename;
