@@ -37,7 +37,6 @@ createElement("buttons","https://lordofthedepth.github.io/Peterhoff/HTML-convers
 .then(() => {insertHtml("button2",`<a href="https://spbarchives.ru/${button2}">Разрушения</a>`)})
 .then(() => {insertHtml("button3",`<a href="https://spbarchives.ru/${button3}">Восстановление</a>`)})
 
-createElement("footer-container","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Footer.html?refresh=1")
 
 
 
@@ -46,10 +45,11 @@ const initialUrl = `https://lordofthedepth.github.io/Peterhoff/SortedMap/${locat
 textURL = initialUrl + "/text.html"
 
 createElement("main-text-container", textURL)
-//createElement("galleries-container").then(() => {
 
 initAllGalleries(initialUrl)
-//});
+
+
+createElement("footer-container","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Footer.html?refresh=1")
 
 
 const GALLERIES_CONTAINER_ID = 'gallery-1';

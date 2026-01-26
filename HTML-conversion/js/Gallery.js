@@ -5,6 +5,25 @@
     // ФУНКЦИЯ для создания галереи с параметрами
     function createGallery(GALLERY_ID, folder, githubPagesUrl) {
         try {
+            // Создаем плашку загрузки
+            function showLoading() {
+                const container = document.getElementById(GALLERY_ID);
+                if (container) {
+                    container.innerHTML = `
+                        <div class="gallery-title"><h1>${GalleryUtils.escapeHtml(folder)}</h1></div>
+                        <div class="loading">Материалы загружаются...</div>
+                    `;
+                }
+            }
+            
+            // Скрываем плашку загрузки
+            function hideLoading() {
+                const loadingElement = document.querySelector(`#${GALLERY_ID} .loading`);
+                if (loadingElement) {
+                    loadingElement.style.display = 'none';
+                }
+            }
+            
             // Извлекаем параметры из GitHub Pages URL
             const urlParts = githubPagesUrl.split('/');
             
@@ -168,7 +187,6 @@
                         // Игнорируем ошибку, пробуем другой способ
                     }
                     
-                    
                     console.log('Папка thumbnails не найдена');
                     return false;
                 } catch (error) {
@@ -198,14 +216,11 @@
                     // Проверяем существование файла
                     const response = await fetch(thumbnailUrl, { method: 'HEAD' });
                     if (response.ok) {
-                        console.log(`✅ Найдена миниатюра через GitHub Pages для: ${imageName}`);
                         return thumbnailUrl;
                     }
-
-                    console.log(`❌ Миниатюра не найдена для: ${imageName}`);
+                    
                     return null;
                 } catch (error) {
-                    console.log(`Ошибка при поиске миниатюры для ${imageName}:`, error.message);
                     return null;
                 }
             }
@@ -215,7 +230,7 @@
                 const imagesInfo = [];
                 
                 // Проверяем наличие папки thumbnails (делаем один раз)
-                const hasThumbnailsFolder = true;//await checkThumbnailsFolder();
+                const hasThumbnailsFolder = true;
                 
                 for (const fileData of files) {
                     const fileName = fileData.filename;
@@ -276,13 +291,6 @@
                         documentAllFiles: documentAllFiles
                     });
                 }
-                
-                // СОРТИРОВКА ПО АЛФАВИТУ по полю displayTitle (только для фотографий)
-                // if (!isDocument) {
-                //     imagesInfo.sort((a, b) => {
-                //         return GalleryUtils.naturalCompare(a.displayTitle, b.displayTitle);
-                //     });
-                // }
                 
                 return imagesInfo;
             }
@@ -354,7 +362,7 @@
                 photos.forEach((entry) => {
                     const displayTitle = entry.displayTitle;
                     const description = GalleryUtils.formatTextWithLineBreaks(entry.description) || '';
-                    const dataTitleAttr = displayTitle ? `data-caption="${GalleryUtils.escapeHtmlAttribute(displayTitle) + " |\n" + GalleryUtils.escapeHtmlAttribute(description)}"` : '';
+                    const dataTitleAttr = displayTitle ? `data-caption="${GalleryUtils.escapeHtmlAttribute(description)}"` : '';
                     
                     html += `
                         <a href="${entry.directUrl}" 
@@ -534,13 +542,20 @@
             // Основная функция инициализации
             async function initGallery() {
                 try {
+                    // Показываем плашку загрузки
+                    showLoading();
+                    
                     const data = await loadFromGitHubPages();
                     createGalleryHTML(data);
                     initFancyboxGallery();
+                    
+                    // Скрываем плашку загрузки после успешной загрузки
+                    hideLoading();
                 } catch (error) {
                     const container = document.getElementById(GALLERY_ID);
                     if (container) {
                         container.innerHTML = `
+                            <div class="gallery-title"><h1>${GalleryUtils.escapeHtml(folder)}</h1></div>
                             <div class="no-media">
                               <p>Ошибка загрузки галереи: ${error.message}</p>
                             </div>
