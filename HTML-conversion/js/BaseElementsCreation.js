@@ -134,7 +134,7 @@ async function initAllGalleries(initialUrl) {
         
         // Инициализируем галереи для каждой папки
         folderNames.forEach((folderName, index) => {
-            const galleryId = `gallery-${folderName.replace(/\s+/g, '-').toLowerCase()}-${index}`;
+            const galleryId = `gallery-${index}`;
             
             console.log(`🖼️ Создаю галерею для папки: "${folderName}" (ID: ${galleryId})`);
             
