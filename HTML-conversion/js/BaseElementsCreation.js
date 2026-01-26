@@ -34,15 +34,14 @@ beforeCode = "%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B"
 destructionCode = "%D1%80%D0%B0%D0%B7%D1%80%D1%83%D1%88%D0%B5%D0%BD%D0%B8%D1%8F"
 restorationCode = "%D0%B2%D0%BE%D1%81%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5"
 stages = [beforeCode,destructionCode,restorationCode]
-locations = ["Peterhof","Pushkin","Pavlovsk"]
-textURL = ""
+locations = ["Петергоф","Пушкин","Павловск"]
 
-
-textURL = `https://lordofthedepth.github.io/Peterhoff/SortedMap/${locations[locationId-1]}/${stages[stageId-1]}/text.html`
+const initialUrl = `https://lordofthedepth.github.io/Peterhoff/SortedMap/${locations[locationId-1]}/${stages[stageId-1]}`;
+textURL = initialUrl + "/text.html"
 
 createElement("main-text-container", textURL)
 //createElement("galleries-container").then(() => {
-const initialUrl = `https://lordofthedepth.github.io/Peterhoff/SortedMap/Peterhof/${stages[stageId-1]}`;
+
 initAllGalleries(initialUrl)
 //});
 
