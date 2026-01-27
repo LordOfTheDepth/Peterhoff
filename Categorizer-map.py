@@ -90,7 +90,7 @@ def DoFolder(source_folder, dest_folder):
     dest_folder_fixed = CategorizerUtills.resolve_relative_path(dest_folder)
 
     thumbnail_generator = ThumbnailGenerator(
-        max_size=(300, 300),
+        max_size=(200, 180),
         quality=85,
         format='JPEG'
     )
