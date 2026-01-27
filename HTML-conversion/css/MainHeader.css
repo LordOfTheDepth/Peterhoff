@@ -57,6 +57,10 @@
 {
   min-height: 120px;
 }
+.logo-comitet
+{
+  max-width: 85px;
+}
 @media (max-width: 1399px)
 {
   .main-header-logos-container
