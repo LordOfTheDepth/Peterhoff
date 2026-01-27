@@ -23,7 +23,7 @@ headerImages = [[
 ]]
 
 
-headerTitle = `${locations[locationId-1]} : ${stages[stageId-1]}`
+headerTitle = `${locations[locationId-1]}: ${stages[stageId-1]}`
 
 createElement("background","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Background.html")
 

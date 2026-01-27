@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class ThumbnailGenerator:
-    def __init__(self, max_size=(200, 200), quality=85, format='JPEG', 
+    def __init__(self, max_size=(200, 200), quality=100, format='JPEG', 
                  preserve_aspect_ratio=True, upscale=False):
         """
         Инициализация генератора миниатюр
