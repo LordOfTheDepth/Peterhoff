@@ -36,11 +36,21 @@
 @media (max-width: 320px)
 {
     .header-content.size-large{
-        font-size: 20px;
+        font-size: 10px;
     }
     
     .main-text-content.size-medium {
-      font-size: 20px;
+      font-size: 10px;
+    }
+}
+@media (max-width: 767px)
+{
+    .header-content.size-large{
+        font-size: 12px;
+    }
+    
+    .main-text-content.size-medium {
+      font-size: 12px;
     }
 }
 

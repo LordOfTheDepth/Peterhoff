@@ -73,7 +73,7 @@
 /* Убираем отступы для адаптивности */
 @media (max-width: 1024px) {
   .three-buttons-row .button a {
-    font-size: 28px;
+    font-size: 26px;
     padding: 8px;
   }
 }

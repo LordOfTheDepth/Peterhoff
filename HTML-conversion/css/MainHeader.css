@@ -40,7 +40,6 @@
   top: 50px;
   right: 50px;
   position: absolute;
-  gap: 100px;
 
 }
 .main-header-logos-container *
@@ -49,10 +48,7 @@
   
 
 }
-.logo-cgantd
-{
 
-}
 .logo-peterhof
 {
   max-width: 140px;
@@ -61,10 +57,7 @@
 {
   min-height: 120px;
 }
-.logo-gov
-{
 
-}
 
 @media (max-width: 1199px)
 {
@@ -100,6 +93,47 @@
   .logo-pushkin
   {
     min-height: 55px;
+  }
+}
+@media (max-width: 767px)
+{
+  
+    .main-header-logos-container
+  {
+    gap: 0px;
+    margin: 10px;
+    right: 0;
+    top: 0;
+    position: absolute;
+    display: block;
+    justify-content: flex-end;
+    padding-left: auto;
+  }
+
+  .logo-pushkin
+  {
+    min-height: 60px;
+  }
+
+  .main-header-overlay-text {
+
+  text-transform: uppercase;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  line-height: 1;
+  position: absolute;
+  top: 150px;
+  color: var(--dark-color);
+  font-weight: bold;
+  font-size: 15;
+  font-family: var(--font-heading);
+  
+  }
+  .main-header-background {
+  bottom: 0;
+  left: 0;
+  width:  100%;
+  margin-top: 120px;
   }
 }
 
