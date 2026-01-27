@@ -249,6 +249,8 @@ def convert_docx_in_folder(source_folder, target_folder):
 
 import re
 
+import re
+
 def format_text_to_html(text):
     """
     Расширенная версия с поддержкой:
@@ -271,8 +273,6 @@ def format_text_to_html(text):
     
     # Обработка инициалов: паттерн для фамилий с инициалами
     # Фамилия (слово с большой буквы, может содержать дефис)
-    # Затем пробел и один или два инициала (с точками или без)
-    # Примеры: Иванов И.И., Петров А.В., Сидоров А Б, Кузнецов-Смоленский В.А.
     
     # Сначала обрабатываем два инициала с точками
     html_text = re.sub(
@@ -298,17 +298,20 @@ def format_text_to_html(text):
         flags=re.IGNORECASE
     )
     
-    # Паттерн для чисел: может быть просто число, диапазон, римские цифры, составной номер
+    # Паттерн для чисел: может быть просто число, диапазон, римские цифр, составной номер
     number_pattern = r'\d+(?:[-\—:]\d+)?(?:[а-яa-z]?|\.\d+)?|(?:\b[IVXLCDM]+\b)'
     
     # Обрабатываем все сокращения с числами
-    abbreviations = ['Л\.', 'Д\.', 'Оп\.']
+    abbreviations = [r'Л\.', r'Д\.', r'Оп\.']
     
     for abbr in abbreviations:
+        # Ищем сокращение, за которым следует число/номер
         pattern = fr'({abbr})\s*({number_pattern})'
         html_text = re.sub(pattern, r'\1&nbsp;\2', html_text, flags=re.IGNORECASE)
     
     # Дополнительно: обработка возможных вариантов с разным регистром
-    html_text = re.sub(r'(?i)(л\.|д\.|оп\.)\s*(\d+)', lambda m: f'{m.group(1)}&nbsp;{m.group(2)}', html_text)
+    html_text = re.sub(r'(?i)(л\.|д\.|оп\.)\s*(\d+)', 
+                       lambda m: f'{m.group(1)}&nbsp;{m.group(2)}', 
+                       html_text)
     
     return html_text
