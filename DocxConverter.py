@@ -148,9 +148,9 @@ class DocxConverter:
             """
             if text is None:
                 text = self.read_file()
-            
+            text = format_text_to_html(text)
             # Убираем лишние пробелы и разделяем на строки
-            lines = [line.strip() for line in text.split('\n')]
+            lines = [line.strip() for line in text.split('<br>')]
             lines = [line for line in lines if line]  # Убираем пустые строки
             
             if not lines:
