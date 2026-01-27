@@ -45,6 +45,8 @@
     
     .media-title * {
         text-decoration: none;
+        white-space: nowrap ;
+
     }
 
     .media-item {
@@ -97,8 +99,16 @@
       font-size: 14px;
       color: var(--dark-color);
       margin-bottom: 5px;
-      word-break: break-word;
       text-decoration: none;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    
+    }
+    .media-title * {
+      text-decoration: none;
+      overflow-wrap: break-word;
+      word-break: break-word;
+
     }
 
     .media-description {
