@@ -24,7 +24,7 @@
   word-break: break-word;
   position: absolute;
   line-height: 1;
-  margin-top: 50px;
+  margin-top: 200px;
   left: 40%;
   right: 5%;
   color: var(--dark-color);
@@ -99,7 +99,7 @@
 @media (max-width: 991px)
 {
   .main-header-overlay-text {
-
+    margin-top: 100px;
     font-size: 35px;
   }
   .main-header-overlay-text-low {
@@ -120,8 +120,8 @@
     max-height: 70px;
   }
   .main-header-overlay-text {
-
-  font-size: 12px;
+    margin-top: 50px;
+    font-size: 12px;
   }
   
   .main-header-overlay-text-low {
