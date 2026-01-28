@@ -230,3 +230,9 @@
 .portlet-header {
     display: none !important;
 }
+
+.btn-primary {
+    color: var(--dark-color);
+    background-color: var(--lightBKG);
+    border-color: var(--lightBKG);
+}
