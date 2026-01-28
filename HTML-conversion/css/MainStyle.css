@@ -43,6 +43,7 @@
     margin-right: auto;
     margin-left: auto;
     align-items: center;
+    margin-top: 15px;
 }
 .root-container .container
 {    
@@ -53,9 +54,11 @@
 .container
 {
     max-width: 1600px;
-        margin-right: auto;
+    margin-right: auto;
     margin-left: auto;
     align-self: center;
+    padding-right: 0;
+    padding-left: 0;
 }
 .portlet
 {
