@@ -43,6 +43,10 @@
     .main-text-content.size-medium {
       font-size: 12px;
     }
+    .header-content h1
+    {
+      font-size: 12px;
+    }
 }
 
 
