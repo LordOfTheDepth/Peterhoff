@@ -16,6 +16,8 @@
   text-transform: uppercase;
   overflow-wrap: normal;
   word-break: keep-all;
+  overflow-wrap: break-word;
+  word-break: break-word;
   line-height: 1;
   position: absolute;
   top: 240px;
@@ -23,20 +25,23 @@
   right: 5%;
   color: var(--dark-color);
   font-weight: bold;
-  font-size: 3.5vw;
+  font-size: 70px;
   font-family: var(--font-heading);
   
 }
 .main-header-overlay-text-low {
   margin-top: 10px;
+  overflow-wrap: break-word;
+  word-break: break-word;
   background-color: var(--lifgtBKG);
   color: var(--darkBKG);
   font-weight: bold;
-  font-size: 2vw;
+  font-size: 40px;
   font-family: var(--font-heading);
 }
 .main-header-logos-container
 {
+  padding: 10px;
   top: 50px;
   right: 50px;
   position: absolute;
@@ -44,32 +49,22 @@
 }
 .main-header-logos-container *
 {
-  max-height: 100px;
+  height: 110px;
   
-
 }
-
-.logo-peterhof
-{
-  max-width: 140px;
-}
-.logo-pushkin
-{
-  min-height: 120px;
-}
-.logo-comitet
-{
-  max-width: 85px;
-}
-@media (max-width: 1399px)
+@media (max-width: 1599px)
 {
   .main-header-logos-container
   {
-    top: 20px;
-    right: 20px;
+    top: 10px;
+    right: 10px;
   }
-
+  .main-header-background {
+  margin-top: 120px;
+  }
 }
+
+
 @media (max-width: 1399px)
 {
   .main-header-logos-container
@@ -77,88 +72,69 @@
     top: 10px;
     right: 10px;
   }
-    .main-header-logos-container *
-  {
-    max-height: 70px;
+    .main-header-overlay-text {
+
+    font-size:  60px;
   }
+
 
 }
 
 @media (max-width: 1199px)
 {
   .main-header-overlay-text {
+
+    font-size: 50px;
+  }
+  .main-header-overlay-text-low {
+
+  font-size: 30px;
+
+  }
+  .main-header-overlay-text {
     top: 200px;
-  
-  }
-  .main-header-logos-container
-  {
-    top: 10px;
-    right: 10px;
-  }
-  .logo-pushkin
-  {
-    min-height: 80px;
+    
   }
   .main-header-logos-container *
   {
-    max-height: 70px;
+    max-height: 90px;
+  }
+  .main-header-background {
+    margin-top: 110px;
   }
 }
 @media (max-width: 991px)
 {
-    .main-header-logos-container
-  {
-    top: 10px;
-    right: 10px;
+  .main-header-overlay-text {
+
+    font-size: 35px;
+  }
+  .main-header-overlay-text-low {
+
+  font-size: 20px;
+
   }
   .main-header-logos-container *
   {
-    max-height: 50px;
+    max-height: 90px;
   }
-  .logo-pushkin
-  {
-    min-height: 55px;
+  .main-header-background {
+    margin-top: 205px;
   }
 }
 @media (max-width: 767px)
 {
   
-    .main-header-logos-container
-  {
-    gap: 0px;
-    margin: 10px;
-    right: 0;
-    top: 0;
-    position: absolute;
-    display: block;
-    justify-content: flex-end;
-    padding-left: auto;
-  }
 
-  .logo-pushkin
-  {
-    min-height: 60px;
-  }
+
+ 
 
   .main-header-overlay-text {
 
-  text-transform: uppercase;
-  overflow-wrap: normal;
-  word-break: keep-all;
-  line-height: 1;
-  position: absolute;
-  top: 150px;
-  color: var(--dark-color);
-  font-weight: bold;
   font-size: 15;
-  font-family: var(--font-heading);
+
   
   }
-  .main-header-background {
-  bottom: 0;
-  left: 0;
-  width:  100%;
-  margin-top: 120px;
-  }
+
 }
 
