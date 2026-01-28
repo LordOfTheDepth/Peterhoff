@@ -125,15 +125,23 @@
 @media (max-width: 767px)
 {
   
-
-
- 
-
+  .main-header-logos-container *
+  {
+    max-height: 70px;
+  }
   .main-header-overlay-text {
 
-  font-size: 15;
-
+  font-size: 12px;
+    
   
+  }
+    .main-header-overlay-text-low {
+
+  font-size: 12px;
+
+  }
+    .main-header-background {
+    margin-top: 205px;
   }
 
 }

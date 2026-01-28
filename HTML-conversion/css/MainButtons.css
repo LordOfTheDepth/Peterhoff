@@ -83,7 +83,10 @@
     flex-direction: column;
     gap: 15px;
   }
-  
+  .button-image
+  {
+    display: none;
+  }
   .three-buttons-row .button-container {
     width: 100%;
   }
