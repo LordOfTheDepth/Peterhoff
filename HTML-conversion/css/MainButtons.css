@@ -81,7 +81,9 @@
 @media (max-width: 768px) {
   .three-buttons-row {
     flex-direction: column;
-    gap: 15px;
+    gap: 8px;
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
   }
   .button-image
   {
@@ -92,8 +94,9 @@
   }
   
   .three-buttons-row .button a {
-    font-size: 28px;
-    min-height: 70px;
+    font-size: 22px;
+    min-height: 50px;
+    padding: 0px;
   }
 }
 
