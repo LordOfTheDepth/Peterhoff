@@ -137,41 +137,51 @@ class DocxConverter:
         
         return output_path
     def convert_to_html(self, text=None):
-            """
-            Конвертирует текст в HTML формат.
+        """
+        Конвертирует текст в HTML формат.
+        
+        Args:
+            text (str, optional): Текст для конвертации. Если None, читает из файла.
             
-            Args:
-                text (str, optional): Текст для конвертации. Если None, читает из файла.
-                
-            Returns:
-                str: HTML представление текста (только содержимое).
-            """
-            if text is None:
-                text = self.read_file()
-            text = format_text_to_html(text)
-            # Убираем лишние пробелы и разделяем на строки
-            lines = [line.strip() for line in text.split('<br>')]
-            lines = [line for line in lines if line]  # Убираем пустые строки
-            
-            if not lines:
-                return ""
-            
-            # Первая непустая строка - заголовок
-            title = lines[0]
-            html_parts = [f'<h1 class="header-content align-center">{title}</h1>']
-            
-            # Добавляем основную часть
-            html_parts.append('<div class="main-text-content align-justify size-medium">')
-            
-            # Обрабатываем остальные строки (абзацы)
-            for line in lines[1:]:
-                if line.strip():  # Пропускаем пустые строки
-                    html_parts.append(f'<p>{line}</p>')
-            
-            html_parts.append('</div>')
-            
-            # Возвращаем только HTML контент (без DOCTYPE, html, head, body и стилей)
-            return '\n'.join(html_parts)
+        Returns:
+            str: HTML представление текста (только содержимое).
+        """
+        if text is None:
+            text = self.read_file()
+        text = format_text_to_html(text)
+        # Убираем лишние пробелы и разделяем на строки
+        lines = [line.strip() for line in text.split('<br>')]
+        lines = [line for line in lines if line]  # Убираем пустые строки
+        
+        if not lines:
+            return ""
+        
+        # Первая непустая строка - заголовок
+        title = lines[0]
+        
+        # Проверяем вторую строку (если она есть) - начинается ли она с "(" и заканчивается ")"
+        if len(lines) > 1 and lines[1].startswith('(') and lines[1].endswith(')'):
+            title += f'<br>{lines[1]}'  # Добавляем вторую строку к заголовку
+            # Убираем первую и вторую строки из основного текста
+            remaining_lines = lines[2:]
+        else:
+            # Убираем только первую строку
+            remaining_lines = lines[1:]
+        
+        html_parts = [f'<h1 class="header-content align-center">{title}</h1>']
+        
+        # Добавляем основную часть
+        html_parts.append('<div class="main-text-content align-justify size-medium">')
+        
+        # Обрабатываем остальные строки (абзацы)
+        for line in remaining_lines:
+            if line.strip():  # Пропускаем пустые строки
+                html_parts.append(f'<p>{line}</p>')
+        
+        html_parts.append('</div>')
+        
+        # Возвращаем только HTML контент (без DOCTYPE, html, head, body и стилей)
+        return '\n'.join(html_parts)
     
 def convert_file_to_html(file_path, output_path=None):
     """
@@ -219,21 +229,23 @@ def convert_docx_in_folder(source_folder, target_folder):
                 
                 try:
                     # Конвертируем docx в html
-                    logger.info(f"Найден docx файл: {filename}, конвертируем...")
-                    html_path = convert_file_to_html(docx_path)
-                    
-                    # Получаем имя файла для копирования в целевую папку
                     html_filename = "text.html" #os.path.basename(html_path)
                     target_html_path = os.path.join(target_folder, html_filename)
+                    logger.info(f"Найден docx файл: {filename}, конвертируем...")
+                    html_path = convert_file_to_html(docx_path, target_html_path)
+                    
+                    # Получаем имя файла для копирования в целевую папку
+                    
                     
                     # Копируем сгенерированный html в целевую папку
-                    shutil.copy2(html_path, target_html_path)
                     
                     converted_count += 1
                     logger.info(f"Успешно сконвертирован и скопирован: {filename} -> {html_filename}")
                     
                 except Exception as e:
                     logger.error(f"Ошибка при конвертации файла {filename}: {e}")
+                
+                break
         
         if converted_count > 0:
             logger.info(f"Сконвертировано {converted_count} docx файлов в папке: {target_folder}")
