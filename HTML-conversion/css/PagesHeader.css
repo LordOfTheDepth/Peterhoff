@@ -34,7 +34,11 @@
   .image-overlay-container {
   height: 200px;
   }
-  
+  .overlay-text {
+
+    font-size: 40px;
+
+  }
 
 }
 @media (max-width: 767px)
