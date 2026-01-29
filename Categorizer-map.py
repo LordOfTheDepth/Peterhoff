@@ -254,22 +254,22 @@ def DoFolder(source_folder, dest_folder):
                 
                 try:
                     # Проверяем, не существует ли уже файл
-                    if os.path.exists(dest_path):
-                        # Добавляем суффикс если файл уже существует
-                        base, ext = os.path.splitext(matched_filename)
-                        counter = 1
-                        while os.path.exists(dest_path):
-                            new_filename = f"{base}_{counter}{ext}"
-                            dest_path = os.path.join(dest_folder_fixed, new_filename)
-                            counter += 1
+                    # if  os.path.exists(dest_path):
+                    #     # Добавляем суффикс если файл уже существует
+                    #     base, ext = os.path.splitext(matched_filename)
+                    #     counter = 1
+                    #     while os.path.exists(dest_path):
+                    #         new_filename = f"{base}_{counter}{ext}"
+                    #         dest_path = os.path.join(dest_folder_fixed, new_filename)
+                    #         counter += 1
                         
-                        final_filename = os.path.basename(dest_path)
-                        logger.info(f"Файл '{matched_filename}' уже существует, сохранен как '{final_filename}'")
+                    #     final_filename = os.path.basename(dest_path)
+                    #     logger.info(f"Файл '{matched_filename}' уже существует, сохранен как '{final_filename}'")
                         
-                        # Обновляем имя файла в map_data
-                        file_data["filename"] = final_filename
-                    else:
-                        final_filename = matched_filename
+                    #     # Обновляем имя файла в map_data
+                    #     file_data["filename"] = final_filename
+                    # else:
+                    final_filename = matched_filename
                     
                     shutil.copy2(matched_file_path, dest_path)
                     copied_count += 1
