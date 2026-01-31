@@ -64,6 +64,11 @@
 {
     margin: 5px;
 }
+.no-click
+{
+    pointer-events: none;
+}
+
 @media (max-width: 1199px)
 {
     .container

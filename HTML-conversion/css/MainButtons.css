@@ -13,7 +13,7 @@
   flex: 1; /* Равномерное распределение ширины */
   display: flex;
   flex-direction: column;
-  background-color: var(--lightBKG);
+  background-color: var(--brightBKG);
   min-width: 0; /* Важно для корректного сжатия */
 }
 
