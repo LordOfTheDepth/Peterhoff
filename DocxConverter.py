@@ -329,6 +329,12 @@ def format_text_to_html(text):
         r'([А-ЯЁ])\.\s*([А-ЯЁ])\.\s+([А-ЯЁ][а-яё]{1,24}(?:-[А-ЯЁ][а-яё]{1,24})?)',
         r'\1.\2.&nbsp;\3',
         html_text
-    )   
+    ) 
+      
+    html_text = re.sub(
+        r'(?<![А-ЯЁа-яёA-Za-z])([А-ЯЁA-Zа-яёa-z]{1,2})\s',
+        r'\1&nbsp;',
+        html_text
+)
     
     return html_text
