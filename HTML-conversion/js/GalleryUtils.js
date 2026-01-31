@@ -31,7 +31,7 @@
             if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
-            return div.innerHTML;
+            return text;//div.innerHTML;
         },
         
         // Экранирование HTML для атрибутов

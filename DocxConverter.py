@@ -297,7 +297,18 @@ def format_text_to_html(text):
     html_text = re.sub(r'(?i)(л\.|д\.|оп\.)\s*(\d+)', 
                        lambda m: f'{m.group(1)}&nbsp;{m.group(2)}', 
                        html_text)
+    html_text = re.sub(
+        r'\sгг\.',          # пробел + гг.
+        '&nbsp;гг.',       # заменяем на &nbsp; + гг.
+        html_text)
+
+    html_text = re.sub(
+        r'(\d)\sг\.',      # цифра (\d) + пробел (\s) + г.
+        r'\1&nbsp;г.',     # цифра + &nbsp; + г.
+        html_text
+    )
     
+
     # ОБРАБОТКА ИНИЦИАЛОВ - БОЛЕЕ ТОЧНАЯ ВЕРСИЯ
     
     # Улучшенный паттерн для фамилий: только слова, которые могут быть фамилиями
