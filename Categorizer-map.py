@@ -178,7 +178,7 @@ def DoFolder(source_folder, dest_folder):
         # Получаем название подпапки из второй строки, второго столбца (столбец B)
         subfolder_name_cell = ws.cell(row=2, column=2).value
         if subfolder_name_cell:
-            subfolder_name = str(subfolder_name_cell).strip()
+            subfolder_name = DocxConverter.format_text_to_html(str(subfolder_name_cell).strip())
         else:
             subfolder_name = ""
         
