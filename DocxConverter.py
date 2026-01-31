@@ -307,7 +307,10 @@ def format_text_to_html(text):
         r'\1&nbsp;г.',     # цифра + &nbsp; + г.
         html_text
     )
-    
+    html_text = re.sub(
+        r'\.-',        
+        '-',       
+        html_text)
 
     # ОБРАБОТКА ИНИЦИАЛОВ - БОЛЕЕ ТОЧНАЯ ВЕРСИЯ
     
