@@ -286,7 +286,7 @@ def format_text_to_html(text):
     number_pattern = r'\d+(?:[-\—:]\d+)?(?:[а-яa-z]?|\.\d+)?|(?:\b[IVXLCDM]+\b)'
     
     # Обрабатываем все сокращения с числами
-    abbreviations = [r'Л\.', r'Д\.', r'Оп\.']
+    abbreviations = [r'Л\.', r'Д\.', r'Оп\.', r'Ф\.']
     
     for abbr in abbreviations:
         # Ищем сокращение, за которым следует число/номер
@@ -324,17 +324,14 @@ def format_text_to_html(text):
         r'\1&nbsp;\2.\3.',
         html_text
     )
-    # Вариант для формата: И.И. Иванов (инициалы перед фамилией)
     html_text = re.sub(
-        r'([А-ЯЁ])\.\s*([А-ЯЁ])\.\s+([А-ЯЁ][а-яё]{1,24}(?:-[А-ЯЁ][а-яё]{1,24})?)',
-        r'\1.\2.&nbsp;\3',
-        html_text
-    ) 
-      
+        r'([А-ЯЁ])\.\s*([А-ЯЁ])\.\s*([А-ЯЁ][а-яё]{1,24}(?:-[А-ЯЁ][а-яё]{1,24})?)',
+        r'\1.&nbsp;\2.&nbsp;\3',
+        html_text)
+
     html_text = re.sub(
         r'(?<![А-ЯЁа-яёA-Za-z])([А-ЯЁA-Zа-яёa-z]{1,2})\s',
         r'\1&nbsp;',
-        html_text
-)
+        html_text)
     
     return html_text
