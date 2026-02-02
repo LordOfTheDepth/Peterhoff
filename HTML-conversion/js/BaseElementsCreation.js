@@ -9,30 +9,43 @@ stagesCodes = [beforeCode,destructionCode,restorationCode]
 stages = ["До войны", "Разрушения", "Восстановление"]
 locations = ["Петергоф","Пушкин","Павловск"]
 headerImages = [[
-"https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_Ptrg.jpg?raw=true",
-"https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_Ptrg_war.jpg?raw=true",
-"https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_Ptrg_vosst.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12890431/verh_Ptrg.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12890431/verh_Ptrg_war.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12890431/verh_Ptrg_vosst.jpg?raw=true",
 ],[
-"https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_push_dovoin.jpg?raw=true",
-"https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_push_razrush.jpg?raw=true",
-"https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_push_vosst.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12890431/verh_push_dovoin.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12890431/verh_push_razrush.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12890431/verh_push_vosst.jpg?raw=true",
 ],[
-"https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_pavl_01.jpg?raw=true",
-"https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_pavl_03.jpg?raw=true",
-"https://github.com/LordOfTheDepth/Peterhoff/blob/main/Misc/verh_pavl_02.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12890431/verh_pavl_01.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12890431/verh_pavl_03.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12890431/verh_pavl_02.jpg?raw=true",
 ]]
 
+folders = [[
+"12896497",
+"12896497",
+"12897888",
+],[
+"12896497",
+"12896497",
+"12896497",
+],[
+"12896497",
+"12896497",
+"12896497",
+]]
 
 headerTitle = `${locations[locationId-1]}: ${stages[stageId-1]}`
 
-createElement("background","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Background.html")
+createElement("background","https://spbarchives.ru/documents/10157/12894466/Background.html")
 
-createElement("header","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/PeterhofHeader.html").then(() => {insertHtml("page-title",headerTitle)}).then(() => 
+createElement("header","https://spbarchives.ru/documents/10157/12894466/PeterhofHeader.html").then(() => {insertHtml("page-title",headerTitle)}).then(() => 
 {
 insertHtml("page-title-img", `<img src = ${headerImages[locationId-1][stageId-1]}> </img>`) 
   
 });
-createElement("buttons","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/PeterhofButtons.html?refresh=1")
+createElement("buttons","https://spbarchives.ru/documents/10157/12894466/PeterhofButtons.html")
 .then(() => {insertHtml("button1",`<a href="https://spbarchives.ru/${button1}">До войны</a>`)})
 .then(() => {insertHtml("button2",`<a href="https://spbarchives.ru/${button2}">Разрушения</a>`)})
 .then(() => {insertHtml("button3",`<a href="https://spbarchives.ru/${button3}">Восстановление</a>`)})
@@ -41,7 +54,7 @@ createElement("buttons","https://lordofthedepth.github.io/Peterhoff/HTML-convers
 
 
 
-const initialUrl = `https://lordofthedepth.github.io/Peterhoff/SortedMap/${locations[locationId-1]}/${stagesCodes[stageId-1]}`;
+const initialUrl = `https://spbarchives.ru/documents/10157/${folders[locationId-1][stageId-1]}`;
 textURL = initialUrl + "/text.html"
 
 createElement("main-text-container", textURL)
@@ -49,7 +62,7 @@ createElement("main-text-container", textURL)
 initAllGalleries(initialUrl)
 
 
-createElement("footer-container","https://lordofthedepth.github.io/Peterhoff/HTML-conversion/html/Footer.html?refresh=1")
+createElement("footer-container","https://spbarchives.ru/documents/10157/12894466/Footer.html?refresh=1")
 
 
 const GALLERIES_CONTAINER_ID = 'gallery-1';
@@ -58,13 +71,7 @@ const GALLERIES_CONTAINER_ID = 'gallery-1';
 // Функция для загрузки map.json напрямую
 async function loadMapJSON() {
     try {
-        // Парсим URL
-        const urlParts = initialUrl.split('/');
-        const GITHUB_REPO = `${urlParts[3]}/${urlParts[4]}`;
-        const GITHUB_BRANCH = urlParts[6];
-        const GITHUB_FOLDER = urlParts.slice(7).join('/');
         
-        const encodedFolder = encodeURIComponent(GITHUB_FOLDER);
         const mapJsonUrl = `${initialUrl}/map.json`;
         
         console.log(`Загружаем map.json: ${mapJsonUrl}`);

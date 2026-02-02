@@ -66,7 +66,7 @@ class ThumbnailGenerator:
             filename = os.path.basename(image_path)
             
             # Создаем путь для сохранения миниатюры
-            output_path = os.path.join(output_folder, filename)
+            output_path = os.path.join(output_folder, "t_"+filename)
             
             # Открываем изображение
             with Image.open(image_path) as img:
@@ -152,11 +152,9 @@ class ThumbnailGenerator:
                         dirs[:] = [d for d in dirs if d not in exclude_folders]
                     
                     # Определяем соответствующую структуру папок в output
-                    rel_path = os.path.relpath(root, input_folder)
-                    if rel_path == '.':
-                        current_output_folder = output_folder
-                    else:
-                        current_output_folder = os.path.join(output_folder, rel_path)
+
+                    current_output_folder = output_folder
+    
                     
                     os.makedirs(current_output_folder, exist_ok=True)
                     
@@ -164,7 +162,7 @@ class ThumbnailGenerator:
                         file_ext = os.path.splitext(file)[1].lower()
                         if file_ext in self.supported_formats:
                             input_path = os.path.join(root, file)
-                            output_path = os.path.join(current_output_folder, file)
+                            output_path = os.path.join(current_output_folder, "t_"+file)
                             
                             # Пропускаем, если миниатюра уже существует
                             if os.path.exists(output_path):

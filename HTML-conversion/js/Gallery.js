@@ -5,6 +5,9 @@
     // ФУНКЦИЯ для создания галереи с параметрами
     function createGallery(GALLERY_ID, folder, githubPagesUrl) {
         try {
+
+
+            
             // Создаем плашку загрузки
             function showLoading() {
                 const container = document.getElementById(GALLERY_ID);
@@ -162,7 +165,8 @@
                     return thumbnailCache.get(cacheKey);
                 }
                 
-                const thumbnailUrl = `${githubPagesUrl}/thumbnails/${encodeURIComponent(imageName)}`;
+                const thumbnailUrl = `${githubPagesUrl}/${encodeURIComponent("t_"+imageName)}`;
+                console.log(thumbnailUrl);
                 const response = await fetchWithCache(thumbnailUrl, { method: 'HEAD' }, cacheKey);
                 
                 const result = response ? thumbnailUrl : null;

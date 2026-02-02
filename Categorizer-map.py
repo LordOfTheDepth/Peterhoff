@@ -24,8 +24,8 @@ def create_thumbnails_for_folder(folder_path, thumbnail_generator):
         int: Количество созданных миниатюр
     """
     # Создаем папку для миниатюр
-    thumbnails_folder = os.path.join(folder_path, "thumbnails")
-    os.makedirs(thumbnails_folder, exist_ok=True)
+    thumbnails_folder = os.path.join(folder_path)
+    
     
     created_count = 0
     
