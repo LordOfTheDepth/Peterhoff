@@ -1,5 +1,5 @@
 
-function createBaseElements(headerTitle, headerImageUrl, button1, button2, button3, locationId, stageId)
+function createBaseElements(locationId, stageId)
 {
     
 beforeCode = "%D0%B4%D0%BE%20%D0%B2%D0%BE%D0%B9%D0%BD%D1%8B"
@@ -8,6 +8,7 @@ restorationCode = "%D0%B2%D0%BE%D1%81%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%BB%
 stagesCodes = [beforeCode,destructionCode,restorationCode]
 stages = ["До войны", "Разрушения", "Восстановление"]
 locations = ["Петергоф","Пушкин","Павловск"]
+
 headerImages = [[
 "https://spbarchives.ru/documents/10157/12890431/verh_Ptrg.jpg?raw=true",
 "https://spbarchives.ru/documents/10157/12890431/verh_Ptrg_war.jpg?raw=true",
@@ -36,9 +37,21 @@ folders = [[
 "12896497",
 ]]
 
-headerTitle = `${locations[locationId-1]}: ${stages[stageId-1]}`
+buttons = [[
+"2447",
+"2448",
+"2449",
+],[
+"2450",
+"2451",
+"2452",
+],[
+"2454",
+"2455",
+"2456",
+]]
 
-createElement("background","https://spbarchives.ru/documents/10157/12894466/Background.html")
+headerTitle = `${locations[locationId-1]}: ${stages[stageId-1]}`
 
 createElement("header","https://spbarchives.ru/documents/10157/12894466/PeterhofHeader.html").then(() => {insertHtml("page-title",headerTitle)}).then(() => 
 {
@@ -46,9 +59,9 @@ insertHtml("page-title-img", `<img src = ${headerImages[locationId-1][stageId-1]
   
 });
 createElement("buttons","https://spbarchives.ru/documents/10157/12894466/PeterhofButtons.html")
-.then(() => {insertHtml("button1",`<a href="https://spbarchives.ru/${button1}">До войны</a>`)})
-.then(() => {insertHtml("button2",`<a href="https://spbarchives.ru/${button2}">Разрушения</a>`)})
-.then(() => {insertHtml("button3",`<a href="https://spbarchives.ru/${button3}">Восстановление</a>`)})
+.then(() => {insertHtml("button1",`<a href="https://spbarchives.ru/${buttons[locationId-1][0]}">До войны</a>`)})
+.then(() => {insertHtml("button2",`<a href="https://spbarchives.ru/${buttons[locationId-1][1]}">Разрушения</a>`)})
+.then(() => {insertHtml("button3",`<a href="https://spbarchives.ru/${buttons[locationId-1][2]}">Восстановление</a>`)})
 
 
 
