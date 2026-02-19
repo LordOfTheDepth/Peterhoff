@@ -259,8 +259,6 @@ def convert_docx_in_folder(source_folder, target_folder):
 
 
 
-import re
-
 
 def format_text_to_html(text):
     """
@@ -344,3 +342,9 @@ def format_text_to_html(text):
         html_text)
     
     return html_text
+
+def main():
+    convert_file_to_html("F:/MiscProjects/Peterhoff/Тексты/MainText.docx")
+
+if __name__ == "__main__":
+    main()
