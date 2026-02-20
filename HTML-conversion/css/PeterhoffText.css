@@ -12,7 +12,7 @@
   padding-left: 20px;
   padding-right: 20px;
 }
-.main-text-content p{
+.main-text-content {
   color: var(--dark-color, #212529);
 }
 
