@@ -46,10 +46,10 @@ class DocxConverter:
     
     def read_docx_file(self):
         """
-        Читает содержимое файла .docx.
+        Читает содержимое файла .docx с сохранением разрывов строк.
         
         Returns:
-            str: Текст из файла .docx.
+            str: Текст из файла .docx с разрывами строк, замененными на \n.
             
         Raises:
             ValueError: Если файл не является валидным .docx.
@@ -63,23 +63,38 @@ class DocxConverter:
                 # Парсим XML
                 root = ET.fromstring(document_content)
                 
-                # Находим все текстовые элементы
+                # Определяем пространства имен
                 namespaces = {
                     'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
                 }
                 
-                # Собираем текст из всех параграфов
+                # Собираем текст из всех элементов с учетом разрывов строк
                 text_parts = []
+                
+                # Проходим по всем параграфам
                 for paragraph in root.findall('.//w:p', namespaces):
                     paragraph_text = []
-                    for text_element in paragraph.findall('.//w:t', namespaces):
-                        if text_element.text:
-                            paragraph_text.append(text_element.text)
                     
+                    # Проходим по всем элементам внутри параграфа
+                    for elem in paragraph.iter():
+                        # Если это текстовый элемент
+                        if elem.tag.endswith('t') and elem.text:
+                            paragraph_text.append(elem.text)
+                        
+                        # Если это разрыв строки (br)
+                        elif elem.tag.endswith('br'):
+                            # Добавляем специальный маркер для разрыва строки
+                            paragraph_text.append('[BR]')
+                    
+                    # Объединяем текст параграфа, заменяя маркеры на \n
                     if paragraph_text:
-                        text_parts.append(''.join(paragraph_text))
+                        full_text = ''.join(paragraph_text)
+                        # Заменяем маркеры на перенос строки
+                        full_text = full_text.replace('[BR]', '\n')
+                        text_parts.append(full_text)
                 
-                return '\n'.join(text_parts)
+                # Объединяем все параграфы с двойным переносом строки
+                return '\n\n'.join(text_parts)
                 
         except (zipfile.BadZipFile, KeyError) as e:
             raise ValueError(f"Файл не является валидным .docx: {e}")
@@ -109,8 +124,6 @@ class DocxConverter:
                 except:
                     raise ValueError(f"Неподдерживаемый формат файла: {suffix}")
     
-    
-    
     def save_html(self, output_path=None):
         """
         Конвертирует текст в HTML и сохраняет в файл.
@@ -136,6 +149,7 @@ class DocxConverter:
             file.write(html_content)
         
         return output_path
+    
     def convert_to_html(self, text=None):
         """
         Конвертирует текст в HTML формат.
@@ -148,118 +162,49 @@ class DocxConverter:
         """
         if text is None:
             text = self.read_file()
-        text = format_text_to_html(text)
-        # Убираем лишние пробелы и разделяем на строки
-        lines = [line.strip() for line in text.split('<br>')]
-        lines = [line for line in lines if line]  # Убираем пустые строки
         
-        if not lines:
+        # Разделяем текст на абзацы (двойной перенос строки)
+        paragraphs = text.split('\n\n')
+        
+        # Обрабатываем первый абзац как заголовок
+        if not paragraphs:
             return ""
         
-        # Первая непустая строка - заголовок
-        title = lines[0]
+        # Первый абзац может содержать разрывы строк, которые нужно заменить на <br>
+        title_paragraph = paragraphs[0].replace('\n', '<br>')
         
-        # Проверяем вторую строку (если она есть) - начинается ли она с "(" и заканчивается ")"
-        if len(lines) > 1 and lines[1].startswith('(') and lines[1].endswith(')'):
-            title += f'<br>{lines[1]}'  # Добавляем вторую строку к заголовку
-            # Убираем первую и вторую строки из основного текста
-            remaining_lines = lines[2:]
+        # Проверяем, есть ли во втором абзаце скобки (для подзаголовка)
+        if len(paragraphs) > 1:
+            second_paragraph = paragraphs[1].strip()
+            if second_paragraph.startswith('(') and second_paragraph.endswith(')'):
+                # Второй абзац - это подзаголовок в скобках
+                title_paragraph += f'<br>{second_paragraph.replace("\n", "<br>")}'
+                remaining_paragraphs = paragraphs[2:]
+            else:
+                # Второй абзац - обычный текст
+                remaining_paragraphs = paragraphs[1:]
         else:
-            # Убираем только первую строку
-            remaining_lines = lines[1:]
+            remaining_paragraphs = []
         
-        html_parts = [f'<h1 class="header-content align-center">{title}</h1>']
+        # Формируем HTML
+        html_parts = [f'<h1 class="header-content align-center">{title_paragraph}</h1>']
         
         # Добавляем основную часть
         html_parts.append('<div class="main-text-content align-justify size-medium">')
         
-        # Обрабатываем остальные строки (абзацы)
-        for line in remaining_lines:
-            if line.strip():  # Пропускаем пустые строки
-                html_parts.append(f'<p>{line}</p>')
+        # Обрабатываем остальные абзацы
+        for paragraph in remaining_paragraphs:
+            if paragraph.strip():  # Пропускаем пустые абзацы
+                # Заменяем переносы строк внутри абзаца на <br>
+                paragraph_html = paragraph.replace('\n', '<br>')
+                # Применяем дополнительное форматирование
+                paragraph_html = format_text_to_html(paragraph_html)
+                html_parts.append(f'<p>{paragraph_html}</p>')
         
         html_parts.append('</div>')
         
-        # Возвращаем только HTML контент (без DOCTYPE, html, head, body и стилей)
         return '\n'.join(html_parts)
     
-def convert_file_to_html(file_path, output_path=None):
-    """
-    Функция для быстрой конвертации файла в HTML.
-    
-    Args:
-        file_path (str or Path): Путь к исходному файлу (.txt или .docx).
-        output_path (str or Path, optional): Путь для сохранения HTML файла.
-        
-    Returns:
-        Path: Путь к сохраненному HTML файлу.
-    """
-    converter = DocxConverter(file_path)
-    return converter.save_html(output_path)
-
-    
-        
-def convert_docx_in_folder(source_folder, target_folder):
-    """
-    Ищет и конвертирует docx файлы из исходной папки в целевую папку
-    
-    Args:
-        source_folder (str): Путь к исходной папке
-        target_folder (str): Путь к целевой папке
-    
-    Returns:
-        int: Количество сконвертированных файлов
-    """
-    converted_count = 0
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-    logger = logging.getLogger(__name__)
-    try:
-        # Проверяем существование исходной папки
-        if not os.path.exists(source_folder):
-            logger.warning(f"Исходная папка не найдена: {source_folder}")
-            return 0
-        
-        # Создаем целевую папку, если ее нет
-        os.makedirs(target_folder, exist_ok=True)
-        
-        # Ищем все docx файлы в исходной папке
-        for filename in os.listdir(source_folder):
-            if filename.lower().endswith('.docx'):
-                docx_path = os.path.join(source_folder, filename)
-                
-                try:
-                    # Конвертируем docx в html
-                    html_filename = "text.html" #os.path.basename(html_path)
-                    target_html_path = os.path.join(target_folder, html_filename)
-                    logger.info(f"Найден docx файл: {filename}, конвертируем...")
-                    html_path = convert_file_to_html(docx_path, target_html_path)
-                    
-                    # Получаем имя файла для копирования в целевую папку
-                    
-                    
-                    # Копируем сгенерированный html в целевую папку
-                    
-                    converted_count += 1
-                    logger.info(f"Успешно сконвертирован и скопирован: {filename} -> {html_filename}")
-                    
-                except Exception as e:
-                    logger.error(f"Ошибка при конвертации файла {filename}: {e}")
-                
-                break
-        
-        if converted_count > 0:
-            logger.info(f"Сконвертировано {converted_count} docx файлов в папке: {target_folder}")
-        else:
-            logger.info(f"Docx файлы не найдены в папке: {source_folder}")
-            
-    except Exception as e:
-        logger.error(f"Ошибка при поиске docx файлов в папке {source_folder}: {e}")
-    
-    return converted_count
-
-
-
-
 def format_text_to_html(text):
     """
     Расширенная версия с поддержкой:
@@ -271,8 +216,7 @@ def format_text_to_html(text):
     if not text:
         return ""
     
-    # Заменяем переносы строк
-    html_text = text.replace('\n', '<br>')
+    html_text = text
     
     # Обрабатываем "г." как год (после цифры)
     html_text = re.sub(r'(\d{1,4})\s*г\.', r'\1&nbsp;г.', html_text)
@@ -293,8 +237,8 @@ def format_text_to_html(text):
     
     # Дополнительно: обработка возможных вариантов с разным регистром
     html_text = re.sub(r'(?i)(л\.|д\.|оп\.)\s*(\d+)', 
-                       lambda m: f'{m.group(1)}&nbsp;{m.group(2)}', 
-                       html_text)
+                        lambda m: f'{m.group(1)}&nbsp;{m.group(2)}', 
+                        html_text)
     html_text = re.sub(
         r'\sгг\.',          # пробел + гг.
         '&nbsp;гг.',       # заменяем на &nbsp; + гг.
@@ -319,11 +263,8 @@ def format_text_to_html(text):
         r'-егг.',        
         '-е гг.',       
         html_text)
-    # ОБРАБОТКА ИНИЦИАЛОВ - БОЛЕЕ ТОЧНАЯ ВЕРСИЯ
     
-    # Улучшенный паттерн для фамилий: только слова, которые могут быть фамилиями
-    # Ограничиваем длину фамилии и используем более строгий паттерн
-    # Фамилия должна быть от 2 до 25 букв, может содержать дефис
+    # ОБРАБОТКА ИНИЦИАЛОВ - БОЛЕЕ ТОЧНАЯ ВЕРСИЯ
     
     # Вариант 1: Два инициала с точками после фамилии (Иванов И.И.)
     html_text = re.sub(
@@ -343,8 +284,80 @@ def format_text_to_html(text):
     
     return html_text
 
+
+def convert_file_to_html(file_path, output_path=None):
+    """
+    Функция для быстрой конвертации файла в HTML.
+    
+    Args:
+        file_path (str or Path): Путь к исходному файлу (.txt или .docx).
+        output_path (str or Path, optional): Путь для сохранения HTML файла.
+        
+    Returns:
+        Path: Путь к сохраненному HTML файлу.
+    """
+    converter = DocxConverter(file_path)
+    return converter.save_html(output_path)
+
+
+def convert_docx_in_folder(source_folder, target_folder):
+    """
+    Ищет и конвертирует docx файлы из исходной папки в целевую папку
+    
+    Args:
+        source_folder (str): Путь к исходной папке
+        target_folder (str): Путь к целевой папке
+    
+    Returns:
+        int: Количество сконвертированных файлов
+    """
+    converted_count = 0
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Проверяем существование исходной папки
+        if not os.path.exists(source_folder):
+            logger.warning(f"Исходная папка не найдена: {source_folder}")
+            return 0
+        
+        # Создаем целевую папку, если ее нет
+        os.makedirs(target_folder, exist_ok=True)
+        
+        # Ищем все docx файлы в исходной папке
+        for filename in os.listdir(source_folder):
+            if filename.lower().endswith('.docx'):
+                docx_path = os.path.join(source_folder, filename)
+                
+                try:
+                    # Конвертируем docx в html
+                    html_filename = "text.html"
+                    target_html_path = os.path.join(target_folder, html_filename)
+                    logger.info(f"Найден docx файл: {filename}, конвертируем...")
+                    html_path = convert_file_to_html(docx_path, target_html_path)
+                    
+                    converted_count += 1
+                    logger.info(f"Успешно сконвертирован и скопирован: {filename} -> {html_filename}")
+                    
+                except Exception as e:
+                    logger.error(f"Ошибка при конвертации файла {filename}: {e}")
+                
+                break
+        
+        if converted_count > 0:
+            logger.info(f"Сконвертировано {converted_count} docx файлов в папке: {target_folder}")
+        else:
+            logger.info(f"Docx файлы не найдены в папке: {source_folder}")
+            
+    except Exception as e:
+        logger.error(f"Ошибка при поиске docx файлов в папке {source_folder}: {e}")
+    
+    return converted_count
+
+
 def main():
     convert_file_to_html("F:/MiscProjects/Peterhoff/Тексты/MainText.docx")
+
 
 if __name__ == "__main__":
     main()
