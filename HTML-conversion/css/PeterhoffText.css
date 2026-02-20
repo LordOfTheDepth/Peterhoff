@@ -6,7 +6,7 @@
 .header-content {
   color: var(--dark-color, #212529);
   font-family: var(--font-header);
-  line-height: 1;
+  line-height: 1.5;
   font-weight: 500;
   margin-bottom: 20px;
   padding-left: 20px;
