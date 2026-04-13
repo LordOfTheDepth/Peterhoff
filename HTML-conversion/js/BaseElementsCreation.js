@@ -10,31 +10,31 @@ stages = ["До войны", "Разрушения", "Восстановлени
 locations = ["Петергоф","Пушкин","Павловск"]
 
 headerImages = [[
-"https://spbarchives.ru/documents/10157/12890431/verh_Ptrg.jpg?raw=true",
-"https://spbarchives.ru/documents/10157/12890431/verh_Ptrg_war.jpg?raw=true",
-"https://spbarchives.ru/documents/10157/12890431/verh_Ptrg_vosst.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12636626/verh_Ptrg.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12636626/verh_Ptrg_war.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12636626/verh_Ptrg_vosst.jpg?raw=true",
 ],[
-"https://spbarchives.ru/documents/10157/12890431/verh_push_dovoin.jpg?raw=true",
-"https://spbarchives.ru/documents/10157/12890431/verh_push_razrush.jpg?raw=true",
-"https://spbarchives.ru/documents/10157/12890431/verh_push_vosst.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12636626/verh_push_dovoin.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12636626/verh_push_razrush.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12636626/verh_push_vosst.jpg?raw=true",
 ],[
-"https://spbarchives.ru/documents/10157/12890431/verh_pavl_01.jpg?raw=true",
-"https://spbarchives.ru/documents/10157/12890431/verh_pavl_03.jpg?raw=true",
-"https://spbarchives.ru/documents/10157/12890431/verh_pavl_02.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12636626/verh_pavl_01.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12636626/verh_pavl_03.jpg?raw=true",
+"https://spbarchives.ru/documents/10157/12636626/verh_pavl_02.jpg?raw=true",
 ]]
 
 folders = [[
-"12896497",
-"12896497",
-"12897888",
+"13310051",
+"13310054",
+"13303307",
 ],[
-"12896497",
-"12896497",
-"12896497",
+"13310057",
+"13310060",
+"13310063",
 ],[
-"12896497",
-"12896497",
-"12896497",
+"13310069",
+"13310072",
+"13310075",
 ]]
 
 buttons = [[

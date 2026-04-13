@@ -1,13 +1,9 @@
-// GalleryNew.js для GitHub Pages
+// Gallery.js - Универсальная галерея
 (function() {
     'use strict';
     
-    // ФУНКЦИЯ для создания галереи с параметрами
-    function createGallery(GALLERY_ID, folder, githubPagesUrl) {
+    function createGallery(GALLERY_ID, folder, baseUrl) {
         try {
-
-
-            
             // Создаем плашку загрузки
             function showLoading() {
                 const container = document.getElementById(GALLERY_ID);
@@ -27,13 +23,10 @@
                 }
             }
             
-            
             // Кэш для миниатюр
             const thumbnailCache = new Map();
             // Кэш для проверки существования файлов
             const fileExistenceCache = new Map();
-            // Флаг наличия папки thumbnails
-            let hasThumbnailsFolderCached = true;
             
             // Функция для выполнения запросов с кэшированием
             async function fetchWithCache(url, options = {}, cacheKey = null) {
@@ -75,22 +68,35 @@
                 }
                 
                 try {
-                    // Вариант 1: Через GitHub Pages (простой доступ к файлу)
-                    const mapJsonUrl = `${githubPagesUrl}/map.json`;
-                    
+                    const mapJsonUrl = `${baseUrl}/map.json`;
+                    console.log(`📡 Загрузка map.json из: ${mapJsonUrl}`);
                     
                     const response = await fetch(mapJsonUrl);
                     
                     if (response.ok) {
                         const jsonData = await response.json();
-                        console.log('✅ map.json файл загружен через GitHub Pages');
+                        console.log('✅ map.json успешно загружен');
+                        
+                        // Диагностика структуры
+                        if (jsonData.folders) {
+                            const availableFolders = Object.keys(jsonData.folders);
+                            console.log(`📁 Доступные папки: ${availableFolders.join(', ')}`);
+                            
+                            if (jsonData.folders[folder]) {
+                                const folderData = jsonData.folders[folder];
+                                const filesCount = folderData.files ? folderData.files.length : 0;
+                                const subfoldersCount = folderData.subfolders ? Object.keys(folderData.subfolders).length : 0;
+                                console.log(`📂 Папка "${folder}": ${filesCount} фото, ${subfoldersCount} подпапок`);
+                            }
+                        }
+                        
                         mapDataCache = jsonData;
                         return jsonData;
                     }
 
-                    throw new Error('map.json не найден ни через GitHub Pages');
+                    throw new Error(`map.json не найден (статус: ${response.status})`);
                 } catch (error) {
-                    console.log('Ошибка при загрузке map.json:', error.message);
+                    console.error('❌ Ошибка при загрузке map.json:', error.message);
                     throw error;
                 }
             }
@@ -99,17 +105,17 @@
             function getFilesFromMainFolder(mapData, folderName) {
                 try {
                     if (!mapData.folders || !mapData.folders[folderName]) {
-                        console.log(`Папка "${folderName}" не найдена в map.json`);
+                        console.warn(`⚠️ Папка "${folderName}" не найдена в map.json`);
                         return [];
                     }
                     
                     const folderData = mapData.folders[folderName];
                     const files = folderData.files || [];
                     
-                    console.log(`Найдено ${files.length} файлов в основной папке "${folderName}"`);
+                    console.log(`📁 Найдено ${files.length} файлов в основной папке "${folderName}"`);
                     return files;
                 } catch (error) {
-                    console.log('Ошибка при получении файлов из основной папки:', error.message);
+                    console.error('❌ Ошибка при получении файлов из основной папки:', error.message);
                     return [];
                 }
             }
@@ -118,7 +124,7 @@
             function getAllDocumentsFromSubfolders(mapData, folderName) {
                 try {
                     if (!mapData.folders || !mapData.folders[folderName]) {
-                        console.log(`Папка "${folderName}" не найдена в map.json`);
+                        console.warn(`⚠️ Папка "${folderName}" не найдена в map.json`);
                         return [];
                     }
                     
@@ -126,7 +132,6 @@
                     const subfolders = folderData.subfolders || {};
                     const allDocuments = [];
                     
-                    // Проходим по всем подпапкам
                     for (const subfolderName in subfolders) {
                         const subfolderData = subfolders[subfolderName];
                         const files = subfolderData.files || [];
@@ -139,22 +144,21 @@
                                 allFiles: files,
                                 totalPages: files.length
                             });
+                            console.log(`📄 Документ "${subfolderName}": ${files.length} стр.`);
                         }
                     }
                     
-                    console.log(`Найдено ${allDocuments.length} документов в подпапках папки "${folderName}"`);
+                    console.log(`📚 Найдено ${allDocuments.length} документов`);
                     return allDocuments;
                 } catch (error) {
-                    console.log('Ошибка при получении документов из подпапок:', error.message);
+                    console.error('❌ Ошибка при получении документов:', error.message);
                     return [];
                 }
             }
             
-            // Функция для проверки существования папки thumbnails (один раз)
-            
             // Функция для получения URL изображения
             function getImageUrl(fileName) {
-                return `${githubPagesUrl}/${encodeURIComponent(fileName)}`;
+                return `${baseUrl}/${encodeURIComponent(fileName)}`;
             }
             
             // Функция для поиска миниатюры для файла с кэшированием
@@ -165,73 +169,83 @@
                     return thumbnailCache.get(cacheKey);
                 }
                 
-                const thumbnailUrl = `${githubPagesUrl}/${encodeURIComponent("t_"+imageName)}`;
-                console.log(thumbnailUrl);
-                const response = await fetchWithCache(thumbnailUrl, { method: 'HEAD' }, cacheKey);
-                
-                const result = response ? thumbnailUrl : null;
-                thumbnailCache.set(cacheKey, result);
-                
-                return result;
+                try {
+                    const thumbnailUrl = `${baseUrl}/${encodeURIComponent("t_"+imageName)}`;
+                    const response = await fetchWithCache(thumbnailUrl, { method: 'HEAD' }, cacheKey);
+                    const result = response ? thumbnailUrl : null;
+                    thumbnailCache.set(cacheKey, result);
+                    return result;
+                } catch (error) {
+                    thumbnailCache.set(cacheKey, null);
+                    return null;
+                }
             }
             
-            // Функция для параллельной загрузки миниатюр
-            async function createImagesInfo(files, isDocument = false, subfolderName = "", documentAllFiles = []) {
-                const imagesInfo = [];
-                
-                // Проверяем наличие папки thumbnails один раз
-                const hasThumbnailsFolder = true;
-                
-                // Создаем массив промисов для параллельной обработки
-                const processingPromises = files.map(async (fileData) => {
+            // БЕЗОПАСНАЯ обработка одного файла - обернуто в try-catch
+            async function processSingleFile(fileData, isDocument, subfolderName, documentAllFiles) {
+                try {
                     const fileName = fileData.filename;
-                    const description = fileData.description || '';
-                    const displayTitle = GalleryUtils.formatDisplayTitle(fileName);
+                    if (!fileName) {
+                        console.warn('⚠️ Файл без имени пропущен');
+                        return null;
+                    }
                     
-                    // Формируем URL для оригинального файла
+                    const description = fileData.description || '';
+                    let displayTitle = '';
+                    let uuid = '';
+                    
+                    try {
+                        displayTitle = GalleryUtils.formatDisplayTitle(fileName);
+                        uuid = GalleryUtils.createFileUUID(fileName);
+                    } catch (utilError) {
+                        console.warn(`⚠️ Ошибка в утилитах для ${fileName}:`, utilError.message);
+                        displayTitle = fileName;
+                        uuid = 'fallback-' + Date.now() + '-' + Math.random();
+                    }
+                    
                     const directUrl = getImageUrl(fileName);
                     
-                    // Ищем миниатюру для этого файла
                     let thumbnailUrl = directUrl;
-                    if (hasThumbnailsFolder) {
+                    try {
                         const foundThumbnailUrl = await findThumbnailForFile(fileName);
                         if (foundThumbnailUrl) {
                             thumbnailUrl = foundThumbnailUrl;
                         }
+                    } catch (thumbError) {
+                        console.warn(`⚠️ Ошибка поиска миниатюры для ${fileName}:`, thumbError.message);
                     }
                     
-                    // Для документов собираем первые 3 страницы
                     let previewPages = [];
-                    if (isDocument && documentAllFiles.length > 1) {
-                        const pagesToShow = Math.min(3, documentAllFiles.length);
-                        const pagePromises = [];
-                        
-                        for (let i = 0; i < pagesToShow; i++) {
-                            const pageFile = documentAllFiles[i];
-                            if (pageFile) {
-                                pagePromises.push((async () => {
-                                    const pageFileName = pageFile.filename;
-                                    const pageDirectUrl = getImageUrl(pageFileName);
-                                    let pageThumbnailUrl = pageDirectUrl;
-                                    
-                                    if (hasThumbnailsFolder) {
+                    if (isDocument && documentAllFiles && documentAllFiles.length > 1) {
+                        try {
+                            const pagesToShow = Math.min(3, documentAllFiles.length);
+                            for (let i = 0; i < pagesToShow; i++) {
+                                const pageFile = documentAllFiles[i];
+                                if (pageFile && pageFile.filename) {
+                                    try {
+                                        const pageFileName = pageFile.filename;
+                                        const pageDirectUrl = getImageUrl(pageFileName);
+                                        let pageThumbnailUrl = pageDirectUrl;
+                                        
                                         const foundPageThumbnailUrl = await findThumbnailForFile(pageFileName);
                                         if (foundPageThumbnailUrl) {
                                             pageThumbnailUrl = foundPageThumbnailUrl;
                                         }
+                                        
+                                        previewPages.push({
+                                            title: GalleryUtils.formatDisplayTitle(pageFileName),
+                                            thumbnailUrl: pageThumbnailUrl,
+                                            directUrl: pageDirectUrl,
+                                            description: pageFile.description || ''
+                                        });
+                                    } catch (pageError) {
+                                        console.warn(`⚠️ Ошибка обработки страницы:`, pageError.message);
                                     }
-                                    
-                                    return {
-                                        title: GalleryUtils.formatDisplayTitle(pageFileName),
-                                        thumbnailUrl: pageThumbnailUrl,
-                                        directUrl: pageDirectUrl,
-                                        description: pageFile.description || ''
-                                    };
-                                })());
+                                }
                             }
+                        } catch (previewError) {
+                            console.warn(`⚠️ Ошибка создания превью:`, previewError.message);
                         }
-                        
-                        previewPages = await Promise.all(pagePromises);
                     }
                     
                     return {
@@ -240,50 +254,80 @@
                         directUrl: directUrl,
                         thumbnailUrl: thumbnailUrl,
                         description: description,
-                        uuid: GalleryUtils.createFileUUID(fileName),
+                        uuid: uuid,
                         isDocument: isDocument,
                         subfolderName: subfolderName,
                         previewPages: previewPages,
-                        documentAllFiles: documentAllFiles
+                        documentAllFiles: documentAllFiles || []
                     };
-                });
-                
-                // Ждем завершения всех промисов
-                const results = await Promise.all(processingPromises);
-                imagesInfo.push(...results);
-                
-                return imagesInfo;
+                } catch (error) {
+                    console.error(`❌ КРИТИЧЕСКАЯ ошибка обработки файла:`, error.message, error.stack);
+                    return null;
+                }
             }
             
-            // Основная функция загрузки данных с оптимизацией
-            async function loadFromGitHubPages() {
-                try {
-                    console.log('🔄 Загрузка данных через GitHub Pages...');
+            // ПОСЛЕДОВАТЕЛЬНАЯ обработка с логированием каждого файла
+            async function createImagesInfo(files, isDocument = false, subfolderName = "", documentAllFiles = []) {
+                if (!files || files.length === 0) return [];
+                
+                const validResults = [];
+                let processedCount = 0;
+                
+                console.log(`🔄 Начинаю обработку ${files.length} файлов (последовательно)...`);
+                
+                for (let i = 0; i < files.length; i++) {
+                    const fileData = files[i];
+                    const fileName = fileData ? fileData.filename : 'unknown';
                     
-                    // Загружаем map.json
+                    try {
+                        console.log(`   Обработка ${i+1}/${files.length}: ${fileName}`);
+                        const result = await processSingleFile(fileData, isDocument, subfolderName, documentAllFiles);
+                        
+                        if (result) {
+                            validResults.push(result);
+                            processedCount++;
+                        } else {
+                            console.warn(`   ⚠️ Файл ${fileName} вернул null`);
+                        }
+                    } catch (error) {
+                        console.error(`   ❌ Файл ${fileName} вызвал ошибку:`, error.message);
+                    }
+                }
+                
+                console.log(`✅ Обработано ${processedCount} из ${files.length} файлов`);
+                return validResults;
+            }
+            
+            // Основная функция загрузки данных
+            async function loadData() {
+                try {
+                    console.log('🔄 Начало загрузки данных...');
+                    
                     const mapData = await loadMapJSON();
                     
-                    // Получаем фотографии из основной папки
                     const filesFromMainFolder = getFilesFromMainFolder(mapData, folder);
-                    
-                    // Получаем документы из подпапок
                     const documentsFromSubfolders = getAllDocumentsFromSubfolders(mapData, folder);
                     
-                    console.log(`🖼️ Найдено ${filesFromMainFolder.length} фотографий в основной папке`);
-                    console.log(`📄 Найдено ${documentsFromSubfolders.length} документов в подпапках`);
+                    console.log(`🖼️ Фото: ${filesFromMainFolder.length}, 📄 Документов: ${documentsFromSubfolders.length}`);
                     
-                    // Загружаем фотографии и документы параллельно
-                    const [photosInfo, documentsInfo] = await Promise.all([
-                        // Фотографии
-                        filesFromMainFolder.length > 0 ? 
-                            createImagesInfo(filesFromMainFolder, false) : 
-                            Promise.resolve([]),
+                    // Загружаем фотографии ПОСЛЕДОВАТЕЛЬНО
+                    let photosInfo = [];
+                    if (filesFromMainFolder.length > 0) {
+                        console.log(`📸 Начинаю загрузку ${filesFromMainFolder.length} фотографий...`);
+                        photosInfo = await createImagesInfo(filesFromMainFolder, false);
+                        console.log(`✅ Загружено фото: ${photosInfo.length}`);
+                    }
+                    
+                    // Загружаем документы ПОСЛЕДОВАТЕЛЬНО
+                    let documentsInfo = [];
+                    if (documentsFromSubfolders.length > 0) {
+                        console.log(`📚 Начинаю загрузку ${documentsFromSubfolders.length} документов...`);
                         
-                        // Документы
-                        (async () => {
-                            if (documentsFromSubfolders.length === 0) return [];
+                        for (let i = 0; i < documentsFromSubfolders.length; i++) {
+                            const document = documentsFromSubfolders[i];
+                            console.log(`   Документ ${i+1}/${documentsFromSubfolders.length}: ${document.subfolder}`);
                             
-                            const docPromises = documentsFromSubfolders.map(async (document) => {
+                            try {
                                 const coverInfo = await createImagesInfo(
                                     [document.coverFile], 
                                     true, 
@@ -292,20 +336,22 @@
                                 );
                                 
                                 if (coverInfo.length > 0) {
-                                    return {
+                                    documentsInfo.push({
                                         ...coverInfo[0],
                                         documentSubfolder: document.subfolder,
                                         documentTotalPages: document.totalPages,
                                         documentAllFiles: document.allFiles
-                                    };
+                                    });
                                 }
-                                return null;
-                            });
-                            
-                            const results = await Promise.all(docPromises);
-                            return results.filter(doc => doc !== null);
-                        })()
-                    ]);
+                            } catch (docError) {
+                                console.warn(`⚠️ Ошибка загрузки документа ${document.subfolder}:`, docError.message);
+                            }
+                        }
+                        
+                        console.log(`✅ Загружено документов: ${documentsInfo.length}`);
+                    }
+                    
+                    console.log(`🏁 ЗАГРУЗКА ЗАВЕРШЕНА. Фото: ${photosInfo.length}, Документов: ${documentsInfo.length}`);
                     
                     return {
                         photos: photosInfo,
@@ -313,7 +359,7 @@
                     };
                     
                 } catch (error) {
-                    console.error('❌ Ошибка при загрузке данных через GitHub Pages:', error);
+                    console.error('❌ Ошибка при загрузке данных:', error);
                     return {
                         photos: [],
                         documents: []
@@ -344,7 +390,8 @@
                                  alt="${GalleryUtils.escapeHtml(displayTitle)}" 
                                  class="media-image photo-image"
                                  loading="lazy"
-                                 decoding="async">
+                                 decoding="async"
+                                 onerror="this.onerror=null; this.src='${entry.directUrl}'">
                           </div>
                        
                           <div class="media-caption">
@@ -399,7 +446,8 @@
                                      alt="${GalleryUtils.escapeHtml(page.title)}" 
                                      class="document-stack-image"
                                      loading="lazy"
-                                     decoding="async">
+                                     decoding="async"
+                                     onerror="this.onerror=null; this.src='${page.directUrl}'">
                             </div>
                         `;
                     });
@@ -423,7 +471,6 @@
             
             // Функция для отложенной загрузки скрытых элементов
             function addHiddenEntriesForDocuments(container, documents) {
-                // Добавляем скрытые элементы после основной загрузки
                 setTimeout(() => {
                     documents.forEach((document) => {
                         const documentSubfolder = document.documentSubfolder;
@@ -450,7 +497,7 @@
                             });
                         }
                     });
-                }, 100); // Небольшая задержка для приоритизации основной загрузки
+                }, 100);
             }
             
             // Функция для создания полного HTML галереи
@@ -472,10 +519,14 @@
                 
                 if (data.photos.length > 0) {
                     galleryHtml += createPhotosGalleryHTML(data.photos);
+                } else {
+                    console.log(`📷 Фото не найдены в "${folder}"`);
                 }
                 
                 if (data.documents.length > 0) {
                     galleryHtml += createDocumentsGalleryHTML(data.documents);
+                } else {
+                    console.log(`📄 Документы не найдены в "${folder}"`);
                 }
                 
                 if (data.photos.length === 0 && data.documents.length === 0) {
@@ -483,35 +534,40 @@
                 }
                 
                 container.innerHTML = galleryHtml;
-                
-                // Отложенная загрузка скрытых элементов
                 addHiddenEntriesForDocuments(container, data.documents);
             }
             
             // Инициализация Fancybox
             function initFancyboxGallery() {
-                GalleryUtils.initFancybox('.photo-item');
-                
-                const documentItems = document.querySelectorAll('.document-item');
-                documentItems.forEach((item) => {
-                    const galleryId = item.getAttribute('data-fancybox');
-                    if (galleryId) {
-                        GalleryUtils.initFancybox(`[data-fancybox="${galleryId}"]`);
-                    }
-                });
+                try {
+                    GalleryUtils.initFancybox('.photo-item');
+                    
+                    const documentItems = document.querySelectorAll('.document-item');
+                    documentItems.forEach((item) => {
+                        const galleryId = item.getAttribute('data-fancybox');
+                        if (galleryId) {
+                            GalleryUtils.initFancybox(`[data-fancybox="${galleryId}"]`);
+                        }
+                    });
+                } catch (error) {
+                    console.warn('⚠️ Ошибка инициализации Fancybox:', error.message);
+                }
             }
             
             // Основная функция инициализации
             async function initGallery() {
                 try {
+                    console.log(`🚀 Инициализация галереи "${folder}"`);
                     showLoading();
                     
-                    const data = await loadFromGitHubPages();
+                    const data = await loadData();
                     createGalleryHTML(data);
                     initFancyboxGallery();
                     
                     hideLoading();
+                    console.log(`✅ Галерея "${folder}" успешно загружена`);
                 } catch (error) {
+                    console.error(`❌ Критическая ошибка:`, error);
                     const container = document.getElementById(GALLERY_ID);
                     if (container) {
                         container.innerHTML = `
@@ -521,6 +577,7 @@
                             </div>
                         `;
                     }
+                    hideLoading();
                 }
             }
             
@@ -532,11 +589,10 @@
             }
             
         } catch (error) {
-            console.error('❌ Ошибка при парсинге GitHub Pages URL:', error);
+            console.error('❌ Ошибка при создании галереи:', error);
         }
     }
     
-    // ЭКСПОРТ функции для использования извне
     window.createGallery = createGallery;
     
 })();
