@@ -6,21 +6,17 @@
 .header-content {
   color: var(--dark-color, #212529);
   font-family: var(--font-header);
-  line-height: 1;
+  line-height: 1.5;
   font-weight: 500;
   margin-bottom: 20px;
   padding-left: 20px;
   padding-right: 20px;
 }
-
 .main-text-content {
   color: var(--dark-color, #212529);
-  font-family: var(--font-body);
-  line-height: 1.6;
-  margin: 0;
-  font-size: 16px;
-  text-indent: 2em; /* Отступ первой строки */
 }
+
+
 /* Размеры текста */
 .main-text-content.size-small {
   font-size: 14px;
@@ -84,7 +80,7 @@
   color: var(--dark-color, #212529);
   margin-top: 24px;
   margin-bottom: 16px;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.3;
 }
 
