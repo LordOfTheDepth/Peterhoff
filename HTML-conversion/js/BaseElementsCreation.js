@@ -53,12 +53,12 @@ buttons = [[
 
 headerTitle = `${locations[locationId-1]}: ${stages[stageId-1]}`
 
-createElement("header","https://spbarchives.ru/documents/10157/12894466/PeterhofHeader.html").then(() => {insertHtml("page-title",headerTitle)}).then(() => 
+createElement("header","https://spbarchives.ru/documents/10157/13296153/PeterhofHeader.html").then(() => {insertHtml("page-title",headerTitle)}).then(() => 
 {
 insertHtml("page-title-img", `<img src = ${headerImages[locationId-1][stageId-1]}> </img>`) 
   
 });
-createElement("buttons","https://spbarchives.ru/documents/10157/12894466/PeterhofButtons.html")
+createElement("buttons","https://spbarchives.ru/documents/10157/13296153/PeterhofButtons.html")
 .then(() => {insertHtml("button1",`<a href="https://spbarchives.ru/${buttons[locationId-1][0]}">До войны</a>`)})
 .then(() => {insertHtml("button2",`<a href="https://spbarchives.ru/${buttons[locationId-1][1]}">Разрушения</a>`)})
 .then(() => {insertHtml("button3",`<a href="https://spbarchives.ru/${buttons[locationId-1][2]}">Восстановление</a>`)})
@@ -75,7 +75,7 @@ createElement("main-text-container", textURL)
 initAllGalleries(initialUrl)
 
 
-createElement("footer-container","https://spbarchives.ru/documents/10157/12894466/Footer.html?refresh=1")
+createElement("footer-container","https://spbarchives.ru/documents/10157/13296153/Footer.html?refresh=1")
 
 
 const GALLERIES_CONTAINER_ID = 'gallery-1';
