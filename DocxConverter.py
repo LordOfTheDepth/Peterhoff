@@ -5,7 +5,6 @@ import xml.etree.ElementTree as ET
 import os
 import json
 import shutil
-from openpyxl import load_workbook
 import logging
 
 class DocxConverter:
@@ -356,7 +355,7 @@ def convert_docx_in_folder(source_folder, target_folder):
 
 
 def main():
-    convert_file_to_html("F:/MiscProjects/Peterhoff/Тексты/MainText.docx")
+    convert_file_to_html("F:/MiscProjects/Peterhoff/Тексты/MainTextNew.docx")
 
 
 if __name__ == "__main__":
